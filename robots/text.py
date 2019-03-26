@@ -42,7 +42,7 @@ def text():
         for i, item in enumerate(sentences):
             a = {'text': sentences[i],
                  'keywords': [],
-                 'imagens': []}
+                 'images': []}
             conteudo.append(a)
         return conteudo
     
@@ -69,5 +69,4 @@ def text():
     content['sentences'] = breakContentSentences(content['sourceContentSanitize'])
     content = limitMaximumSentences(content)
     content = fetchKeywordsOfAllSentences(content)
-    print(json.dumps(content,indent=2))
     saveContent(content) 

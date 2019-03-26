@@ -1,5 +1,5 @@
 import json
-contentFilePath = './Robots/content.json'
+contentFilePath = 'content.json'
 
 def saveContent(content):
     with open(contentFilePath,'w') as save:
