@@ -106,6 +106,7 @@ venv.bak/
 # Credential
 algorithmiaC.py
 watsonC.py
+googleSearch.py
 
 # Robots
 content.json
