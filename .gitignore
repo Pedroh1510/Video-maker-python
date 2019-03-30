@@ -109,4 +109,8 @@ watsonC.py
 googleSearch.py
 
 # Robots
+
+# Content
 content.json
+content.txt
+*.png
