@@ -1,5 +1,5 @@
 import json
-contentFilePath = 'content.json'
+contentFilePath = 'content/content.json'
 
 def saveContent(content):
     with open(contentFilePath,'w') as save:
