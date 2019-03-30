@@ -54,6 +54,7 @@ def downloadAllImages(content):
 def images():
     content = loadContent()
     fetchImagesOfAllSentences(content)
-
+    downloadAllImages(content)
+    
     print(json.dumps(content,indent=2))
     saveContent(content)
