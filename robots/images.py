@@ -1,9 +1,13 @@
-# from googleapiclient.discovery import build
+from googleapiclient.discovery import build
 from robots.state import saveContent,loadContent
 from credential.googleSearch import googleSearchCredentials
 import json
 
+<<<<<<< HEAD
+import requests
+=======
 from apiclient.discovery import build
+>>>>>>> 3c789988ace652db553ab7807818c2d5a7c00924
 
 def fetchGoogleAndReturnImagesLinks(query):
     service = build("customsearch", "v1", developerKey=googleSearchCredentials['apiKey'])
