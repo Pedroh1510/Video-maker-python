@@ -3,7 +3,11 @@ from robots.state import saveContent,loadContent
 from credential.googleSearch import googleSearchCredentials
 import json
 
+<<<<<<< HEAD
 import requests
+=======
+from apiclient.discovery import build
+>>>>>>> 3c789988ace652db553ab7807818c2d5a7c00924
 
 def fetchGoogleAndReturnImagesLinks(query):
     service = build("customsearch", "v1", developerKey=googleSearchCredentials['apiKey'])
@@ -24,6 +28,7 @@ def fetchImagesOfAllSentences(content):
         query = '{} {}'.format(content['searchTerm'], sentence['keywords'][0])
         sentence['images'] = fetchGoogleAndReturnImagesLinks(query)
         sentence['googleSeachQuery'] = query
+
 
 def downloadAndSave(url, fileName):
     fileName = 'content/'+fileName
@@ -52,5 +57,10 @@ def images():
     content = loadContent()
     fetchImagesOfAllSentences(content)
     downloadAllImages(content)
+=======
+def images():
+    content = loadContent()
+    fetchImagesOfAllSentences(content)
+
     print(json.dumps(content,indent=2))
     saveContent(content)
