@@ -37,7 +37,6 @@ def downloadAndSave(url, fileName):
 
 def downloadAllImages(content):
     content['downloadedImages'] = []
-    print(json.dumps(content,indent=2))
     for sentenceIndex in range(len((content['sentences']))):
         images = content['sentences'][sentenceIndex]['images']
         for imageIndex in range(len(images)):
@@ -51,10 +50,10 @@ def downloadAllImages(content):
                 print("{} {} Erro ao baixar: {}".format(sentenceIndex,imageIndex,imageUrl))
 
 
+    
+
 def images():
     content = loadContent()
     fetchImagesOfAllSentences(content)
     downloadAllImages(content)
-    
-    print(json.dumps(content,indent=2))
     saveContent(content)
