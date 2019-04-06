@@ -4,9 +4,9 @@ from robots.images import images
 from robots.video import video
 
 def start():
-#     user()
-#     text()
-#     images()
-    video()
+    user()
+    text()
+    images()
+    video
     
 start()
