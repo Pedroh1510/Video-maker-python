@@ -1,5 +1,10 @@
-from pgmagick.api import Image
-from robots.state import loadContent
+from robots.state import loadContent, saveContent
+from wand.image import Image
+from wand.color import Color
+from wand.font import Font
+import sys
+
+rootPath = sys.path[0]
 
 def convertImage(sentenceIndex):
     inputFile = 'content/{}-original.png'.format(sentenceIndex)
@@ -13,6 +18,7 @@ def convertImage(sentenceIndex):
 #     gm.extent((str(width)+'x'+str(height)))
     try:
         gm.write(outputFile)
+        print('> Image converted: {}'.format(inputFile))
     except RuntimeError:
         print('error {}'.format(sentenceIndex))
     
@@ -67,19 +73,33 @@ def createSentenceImage(sentenceIndex, sentenceText):
           'gravity': 'center'
         }
       }
-    gm = Image((templateSettings[sentenceIndex]['width'],templateSettings[sentenceIndex]['height']), 'transparent')
-#     gm.backgroundColor('transparent')
-#     gm.orientation(templateSettings[sentenceIndex]['gravity'])
-    gm.annotate(sentenceText,gravity=templateSettings[sentenceIndex]['gravity'])
-#     gm.fillColor('white')
-    gm.write(outputFile)
+    w = templateSettings[sentenceIndex]['width']
+    h = templateSettings[sentenceIndex]['height']
+    with Color('transparent') as bg:
+        with Image(width=w,height=h, background=bg) as img:
+            a = Font('./robots/fonts/verdana/Verdana.fft')
+            img.caption(text= sentenceText,left= 15,top= 15,font= a)
+            img.save(filename=outputFile)
+            print('> Sentence created: {}'.format(outputFile))
     
 def createAllSentenceImages(content):
     for sentenceIndex in range(len((content['sentences']))):
         createSentenceImage(sentenceIndex,content['sentences'][sentenceIndex]['text'])
-    
+
+def createYouTubeThumbnail(content):
+    with Image(filename='./content/0-converted.png') as img:
+        print('> Creating YouTube thumbnail')
+        img.save(filename= 'content/youtube-thumbnail.jpg')
+        
+def renderVideoWithAfterEffects():
+    aerender = 'C:\Program Files\Adobe\Adobe After Effects CS6'
+    templateFilePath = '{}/templates/1/template.aep'.format(rootPath)
+    destinationFilePath = '{}/content/output.mov'.format(rootPath)
     
 def video():
     content = loadContent()
-#     convertAllImages(content)
+    convertAllImages(content)
     createAllSentenceImages(content)
+    createYouTubeThumbnail(content)
+    renderVideoWithAfterEffects()
+    saveContent(content)
