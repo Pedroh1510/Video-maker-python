@@ -115,3 +115,7 @@ content.json
 content.txt
 *.png
 *.jpg
+*.wav
+
+# BlackList
+blackList.json
