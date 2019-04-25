@@ -111,11 +111,21 @@ googleSearch.py
 # Robots
 
 # Content
+aaaaaaaaa.py
 content.json
 content.txt
-*.png
-*.jpg
-*.wav
+*converted.png
+*original.png
+youtube-thumbnail.jpg
+*audio.wav
+*.mov
+after-effects-script.js
+draw-word-wrap.png
+*sentence.png
 
 # BlackList
 blackList.json
+
+# templates/1/
+Logs de template.aep/
+Salvamento automático do Adobe After Effects/

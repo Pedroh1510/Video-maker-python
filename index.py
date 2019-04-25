@@ -5,10 +5,10 @@ from robots.images import images
 from robots.video import video
 
 def start():
-    user()
-    text()
-    voice()
-    images()
+#     user()
+#     text()
+# #     voice()
+#     images()
     video()
     
 print('Start!')

@@ -42,8 +42,7 @@ def text():
         for i, item in enumerate(sentences):
             a = {'text': sentences[i],
                  'keywords': [],
-                 'images': [],
-                 'audio': False}
+                 'images': []}
             conteudo.append(a)
         print('> Break content sentences concluded')
         return conteudo
