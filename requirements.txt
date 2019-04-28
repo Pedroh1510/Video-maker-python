@@ -1,6 +1,7 @@
+Wand==0.5.3
+nltk==3.4
 watson_developer_cloud==2.8.0
 requests==2.21.0
-nltk==3.4
-Wand==0.5.3
+google_auth_oauthlib==0.3.0
 Algorithmia==1.1.4
 google_api_python_client==1.7.8

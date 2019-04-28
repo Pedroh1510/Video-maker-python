@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+﻿# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -104,21 +104,20 @@ venv.bak/
 .mypy_cache/
 
 # Credential
-algorithmiaC.py
-watsonC.py
-googleSearch.py
+credential/*py
+credential/*json
 
 # Robots
 
 # Content
 aaaaaaaaa.py
+content/*png
+content/*jpg
 content.json
 content.txt
-*converted.png
-*original.png
-youtube-thumbnail.jpg
 *audio.wav
 *.mov
+*.mp4
 after-effects-script.js
 draw-word-wrap.png
 *sentence.png

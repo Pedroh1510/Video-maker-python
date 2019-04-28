@@ -1,7 +1,7 @@
 import json
-contentFilePath = 'content/content.json'
+contentFilePath = './content/content.json'
 scriptFilePath = './content/after-effects-script.js'
-blackListFilePath = 'content/blackList/blackList.json'
+blackListFilePath = './content/blackList/blackList.json'
 
 def saveContent(content):
     with open(contentFilePath,'w') as save:

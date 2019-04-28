@@ -1,5 +1,7 @@
 import Algorithmia as algorithmia
 import nltk
+import unicodedata
+import json
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
 
@@ -8,7 +10,7 @@ from credential.algorithmiaC import ApiKey as algorithmiaApiKey
 from credential.watsonC import ApiKeyNLU as watsonApiKey
 
 
-def text():
+def robotText():
     service = NaturalLanguageUnderstandingV1(
         version= watsonApiKey['version'],
         url= watsonApiKey['url'],
@@ -22,14 +24,19 @@ def text():
         wikipediaResponde = wikipediaAlgorithm.pipe(searchTerm).result
         wikipediaContent = wikipediaResponde
         print('> Wikipedia content downloaded')
-        return wikipediaContent["content"]
+        return wikipediaContent["content"].encode('ascii',errors='ignore').decode()
 
 
     def sanitizeContent(sorceContentOriginal):
         def removeBlankLinesAndMarkdown(text):
+            text = str(text)
             allLinesFirtState = list(filter(lambda x: x!='', text.split('\n')))
-            allLines = list(filter(lambda x: not(x.startswith('=')), allLinesFirtState))
+            allLines = list(filter(lambda x: not(x.startswith('==')), allLinesFirtState))
             allLines = ' '.join(allLines)
+            allLines = allLines.encode('ascii',errors='ignore').decode()
+            allLines = allLines.replace(' ()', '')
+            allLines = allLines.replace(' ( )', '')
+            allLines = allLines.replace('[...]', '')
             return allLines
             
         withoutBlankLines = removeBlankLinesAndMarkdown(sorceContentOriginal)
