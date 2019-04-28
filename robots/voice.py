@@ -2,7 +2,7 @@ from watson_developer_cloud import TextToSpeechV1
 from credential.watsonC import ApiKeyTTS as watsonApiKey
 from robots.state import saveContent,loadContent
 
-def voice():
+def robotVoice():
     text_to_speech = TextToSpeechV1(
             iam_apikey= watsonApiKey['iam_apikey'],
             url=watsonApiKey['url']
