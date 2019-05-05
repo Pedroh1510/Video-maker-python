@@ -1,6 +1,5 @@
 import Algorithmia as algorithmia
 import nltk
-import unicodedata
 import json
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
@@ -8,7 +7,7 @@ from watson_developer_cloud.natural_language_understanding_v1 import Features, E
 from robots.state import saveContent,loadContent
 from credential.algorithmiaC import ApiKey as algorithmiaApiKey
 from credential.watsonC import ApiKeyNLU as watsonApiKey
-
+from unicodedata import normalize
 
 def robotText():
     service = NaturalLanguageUnderstandingV1(
@@ -21,10 +20,12 @@ def robotText():
         print('> Wikipedia content downloading')
         algorithmiaAutheticated = algorithmia.client(algorithmiaApiKey)
         wikipediaAlgorithm = algorithmiaAutheticated.algo('web/WikipediaParser/0.1.2')
-        wikipediaResponde = wikipediaAlgorithm.pipe(searchTerm).result
-        wikipediaContent = wikipediaResponde
+        wikipediaResponde = wikipediaAlgorithm.pipe(content['searchTerm']).result
+#         wikipediaContent = wikipediaResponde["content"].encode('utf-8')
+        wikipediaContent = normalize('NFKD', wikipediaResponde["content"]).encode('ASCII', 'ignore').decode('ASCII')
+        wikipediaUrl = wikipediaResponde['url']
         print('> Wikipedia content downloaded')
-        return wikipediaContent["content"].encode('ascii',errors='ignore').decode()
+        return wikipediaContent, wikipediaUrl
 
 
     def sanitizeContent(sorceContentOriginal):
@@ -33,7 +34,7 @@ def robotText():
             allLinesFirtState = list(filter(lambda x: x!='', text.split('\n')))
             allLines = list(filter(lambda x: not(x.startswith('==')), allLinesFirtState))
             allLines = ' '.join(allLines)
-            allLines = allLines.encode('ascii',errors='ignore').decode()
+            allLines = normalize('NFKD', allLines).encode('ASCII', 'ignore').decode('ASCII')
             allLines = allLines.replace(' ()', '')
             allLines = allLines.replace(' ( )', '')
             allLines = allLines.replace('[...]', '')
@@ -49,7 +50,8 @@ def robotText():
         for i, item in enumerate(sentences):
             a = {'text': sentences[i],
                  'keywords': [],
-                 'images': []}
+                 'images': []
+                 }
             conteudo.append(a)
         print('> Break content sentences concluded')
         return conteudo
@@ -61,9 +63,8 @@ def robotText():
     
     def fetchWatsonAndReturnKeywords(sentence):
         response = service.analyze(
-    text=sentence,
-    features=Features(entities=EntitiesOptions(),
-    keywords=KeywordsOptions())).get_result()
+            text=sentence,
+            features=Features(entities=EntitiesOptions(),keywords=KeywordsOptions())).get_result()
         def filtro(value=[]):
             return value['text']
         return list(map(filtro,response['keywords']))
@@ -76,9 +77,9 @@ def robotText():
         return content
     
     content = loadContent()    
-    content['sorceContentOriginal'] = fetchContentFromWikipedia(content['searchTerm'])
+    content['sorceContentOriginal'] ,content['wikipediaUrl'] = fetchContentFromWikipedia(content['searchTerm'])
     content['sourceContentSanitize'] = sanitizeContent(content['sorceContentOriginal'])
     content['sentences'] = breakContentSentences(content['sourceContentSanitize'])
     content = limitMaximumSentences(content)
     content = fetchKeywordsOfAllSentences(content)
-    saveContent(content) 
+    saveContent(content)

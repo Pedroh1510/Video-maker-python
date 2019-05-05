@@ -11,23 +11,40 @@ rootPath = sys.path[0]
 
 def robotVideo():
     def convertImage(sentenceIndex):
+        def ajustImage(imageOriginal,widthDefault,heightDefault,proportionDefault):
+            width = imageOriginal.size[0]
+            height = imageOriginal.size[1]
+            proportion = width / height
+            ajustWidth = widthDefault/proportionDefault 
+            ajustHeight = heightDefault/proportionDefault
+            differenceWidth = width - widthDefault
+            differenceHeight = height - heightDefault
+            if(round(proportion, 2) == round(proportionDefault, 2)):
+                imageOriginal.resize(int(widthDefault/proportionDefault), int(heightDefault/proportionDefault))
+                return imageOriginal
+            if(differenceWidth > differenceHeight):
+                imageOriginal.transform(resize= '{}'.format(ajustWidth))
+                return imageOriginal
+            elif(differenceHeight > differenceWidth):
+                imageOriginal.transform(resize= 'x{}'.format(ajustHeight))
+                return imageOriginal
+            
+        
         inputFile = './content/{}-original.png'.format(sentenceIndex)
         outputFile = './content/{}-converted.png'.format(sentenceIndex)
         center = GRAVITY_TYPES[5]
         width = 1920
         height = 1080
+        proportionDefault = width / height
         try:
             with Image(filename=inputFile) as original:
                 original.format = 'png'
+                original = ajustImage(original, width, height, proportionDefault)
                 with original.clone() as copy:
                     copy.resize(width= width, height= height)
                     copy.blur(sigma= 0x9, radius= 0x9)
                     copy.composite(original, gravity= center)
                     copy.save(filename=outputFile)
-    #             with original.clone() as gm:
-    #                 gm.format = 'png'
-    #                 gm.sample(width,height)
-    #                 gm.save(filename=outputFile)
             print('> Image converted: {}'.format(inputFile))
         except RuntimeError:
             print('error {}'.format(sentenceIndex))
@@ -100,7 +117,6 @@ def robotVideo():
                 img.font_color
                 img.caption(text= sentenceText,font= a,gravity= GRAVITY_TYPES[templateSettings[templateIndex]['g']])
                 img.save(filename=outputFile)
-
         print('> Sentence {} created: {}'.format(sentenceIndex,outputFile))
         
     def createAllSentenceImages(content):
@@ -113,7 +129,7 @@ def robotVideo():
             templateIndex += 1
         print('> Creating all sentences images completed')
     
-    def createYouTubeThumbnail(content):
+    def createYouTubeThumbnail():
         print('> Creating YouTube thumbnail')
         with Image(filename='./content/0-converted.png') as img:
             img.convert('jpg')
@@ -126,7 +142,7 @@ def robotVideo():
     def renderVideoWithAfterEffects(content):
         aerender = 'C:\Program Files\Adobe\Adobe After Effects CC 2019\Support Files'
         templateFilePath = '{}/templates/{}/template.aep'.format(rootPath, content['template'])
-        destinationFilePath = '{}/content/output.mov'.format(rootPath)
+        destinationFilePath = '{}/content/output.mp4'.format(rootPath)
         cmd = '''c:
     cd "{}" 
     aerender.exe -comp main -project "{}" -output "{}"
@@ -142,9 +158,9 @@ def robotVideo():
         print('> Terminated After Effects')
         
     content = loadContent()
-#     convertAllImages(content)
-#     createAllSentenceImages(content)
-#     createYouTubeThumbnail(content)
-#     saveContent(content)
-#     createAfterEffectsScript(content)
+    convertAllImages(content)
+    createAllSentenceImages(content)
+    createYouTubeThumbnail()
+    saveContent(content)
+    createAfterEffectsScript(content)
     renderVideoWithAfterEffects(content)
