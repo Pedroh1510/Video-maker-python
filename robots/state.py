@@ -15,11 +15,15 @@ def saveScript(content):
     with open(scriptFilePath,'w') as save:
         scriptString = 'var content = {}'.format(content)
         save.write(scriptString)
-    
-def saveBlackList(content):
-    with open(blackListFilePath,'w') as save:
-        json.dump(content,save)
+
+
 def loadBlackList():
     with open(blackListFilePath,'r') as contentJson:
         content = json.load(contentJson)
         return content
+
+def saveBlackList(url):
+    content = loadBlackList()
+    content['blackList'].append(url)
+    with open(blackListFilePath,'w') as save:
+        json.dump(content,save)

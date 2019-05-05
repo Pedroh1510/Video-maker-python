@@ -1,9 +1,8 @@
 from googleapiclient.discovery import build
-from robots.state import saveContent, loadContent, loadBlackList
+from robots.state import saveContent, loadContent, loadBlackList, saveBlackList
 from credential.googleSearch import googleSearchCredentials
 import requests
-
-
+from PIL import Image
 
 
 def robotImages():
@@ -13,7 +12,7 @@ def robotImages():
             cx = googleSearchCredentials['searchEngineId'],
             q = query,
             searchType = 'image',
-            num  = 5).execute()
+            num  = 30).execute()
         def filtro(value=[]):
                 return value['link']
         if not 'items' in response:
@@ -27,7 +26,7 @@ def robotImages():
             query = '{} {}'.format(content['searchTerm'], sentence['keywords'][0])
             sentence['images'] = fetchGoogleAndReturnImagesLinks(query)
             sentence['googleSeachQuery'] = query
-        print('> Fetch voices of all sentences concluded')
+        print('> Fetch images of all sentences concluded')
     
     
     def downloadAndSave(url, fileName):
@@ -37,19 +36,37 @@ def robotImages():
         f.close()
         return url
     
+    def viewImage(imageUrl):
+        try:
+            im = Image.open(requests.get(imageUrl, stream=True).raw)
+            im.show()
+            decition = str(input('Use this image?(y/n) '))
+            if(decition != 'y'):
+                saveBlackList(imageUrl)
+                return True
+        except:
+            return True
+        return False
+            
     
-    def downloadAllImages(content,blackList):
+    def downloadAllImages(content):
         print('> Downloading all images...')
         content['downloadedImages'] = []
         for sentenceIndex in range(len((content['sentences']))):
             images = content['sentences'][sentenceIndex]['images']
             for imageIndex in range(len(images)):
                 imageUrl = images[imageIndex]
-                if(imageUrl in content['downloadedImages']):
+                
+                blackList = loadBlackList()
+                
+                if(imageUrl in (content['downloadedImages'] or blackList)):
                     print("> {} {} Erro imagem ja existe: {}".format(sentenceIndex,imageIndex,imageUrl))
                     continue
                 elif(imageUrl in blackList):
                     print("> {} {} Erro imagem na Black List: {}".format(sentenceIndex,imageIndex,imageUrl))
+                    continue
+                elif(viewImage(imageUrl)):
+                    print("> {} {} Erro imagem rejeitada: {}".format(sentenceIndex,imageIndex,imageUrl))
                     continue
                 try:
                     content['downloadedImages'].append(downloadAndSave(imageUrl,'{}-original.png'.format(sentenceIndex)))
@@ -61,8 +78,8 @@ def robotImages():
         
         
     content = loadContent()
-    blackList = loadBlackList()
     fetchImagesOfAllSentences(content)
-    downloadAllImages(content, blackList['blackList'])
     saveContent(content)
-    
+    content = loadContent()
+    downloadAllImages(content)
+    saveContent(content)

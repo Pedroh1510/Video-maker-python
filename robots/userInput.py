@@ -2,7 +2,7 @@ from robots.state import saveContent
 
 def user():
     def askAndReturnSearchTerm():
-        return str(input('Type a Wikipedia search term: '))
+        return str(input('Type a Wikipedia search term: ')).title()
     
     def redLine(lista, text):
         for i in range(len(lista)):
@@ -15,9 +15,10 @@ def user():
         return prefixes[prefix]
     
     def askAndReturnTemplate():
-        prefixes = ['Know the world ','Senta que la vem historia']
+        prefixes = ['Know the world ','Senta que la vem historia - newsroom','Senta que la vem historia - music epic',
+                    'Senta que la vem historia - music evolution']
         prefix = redLine(prefixes,'Choose a option: ')
-        return prefix
+        return prefix+1
     
     content={
       'searchTerm': askAndReturnSearchTerm(),

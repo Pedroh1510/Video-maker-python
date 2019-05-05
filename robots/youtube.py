@@ -43,18 +43,37 @@ def robotYoutube():
     def uploadVideo(content):
         def filtro(value=[]):
             return value['text']
-        videoFilePath = './content/output.mov'
+        videoFilePath = './content/output.mp4'
         videoFileSize = getsize(videoFilePath)
         videoTitle = '{} {}'.format(content['prefix'],content['searchTerm'])
         videoTags = [content['searchTerm']]
         videoTags.extend(content['sentences'][0]['keywords'])
         videoDescription = '\n\n'.join(list(map(filtro,content['sentences'])))
-        
-#         print('videoFilePath: '+videoFilePath)
-#         print('videoFileSize: ',videoFileSize)
-#         print('videoTitle: '+videoTitle)
-#         print('videoTags: ',videoTags)
-#         print('videoDescription: ',videoDescription)
+        idealizer = 'https://www.youtube.com/channel/UCU5JicSrEM5A63jkJ2QvGYw'
+        credits = '''\n\nCredits:
+-Wikipedia: {}
+-Images:
+-{}
+-{}
+-{}
+-{}
+-{}
+-{}
+-{}
+-Idealizer of the project: Filipe Deschamps
+-{}
+'''.format(content['wikipediaUrl'],
+           content['downloadedImages'][0],
+           content['downloadedImages'][1],
+           content['downloadedImages'][2],
+           content['downloadedImages'][3],
+           content['downloadedImages'][4],
+           content['downloadedImages'][5],
+           content['downloadedImages'][6],
+           idealizer)
+        videoDescription += credits
+        if(content['template']>1):
+            videoDescription += '\n-Music: https://www.bensound.com/royalty-free-music'
         
         requestParameters = {
             'part': 'snippet, status',
@@ -65,7 +84,7 @@ def robotYoutube():
                     'tags': videoTags
                 },
                 'status': {
-                    'privacyStatus': 'unlisted'
+                    'privacyStatus': 'public'
                 }
             },
             'media': {
@@ -77,7 +96,7 @@ def robotYoutube():
             body= requestParameters['requestBody'],
             media_body= requestParameters['media']['body']
             )
-        print("Uploading file...")
+        print("> Uploading video file...")
         status, response = youtubeResponse.next_chunk()
         if 'id' in response:
             print('> Video available at: https://youtu.be/{}'.format(response['id']))
@@ -86,7 +105,7 @@ def robotYoutube():
             exit("The upload failed with an unexpected response: %s" % response)
             
     def uploadThumbnail(videoInformation):
-        videoId = videoInformation['id']
+        videoId = videoInformation
         videoThumbnailFilePath = './content/youtube-thumbnail.jpg'
         
         requestParameters = {
@@ -96,18 +115,16 @@ def robotYoutube():
                 'body': MediaFileUpload(videoThumbnailFilePath, chunksize=-1, resumable=True)
                 }
             }
-        
+        print("> Uploading thumbnails file...")
         youtube.thumbnails().set(
             videoId= requestParameters['videoId'],
             media_body= requestParameters['media']['body']
             ).execute()
+        print("> Uploaded thumbnails")
         
     OAuthClient = createOAuthClient()
     authorizationToken = requestUserConsent(OAuthClient)
     youtube = setGlobalGoogleAuthentication(authorizationToken)
-#     content = loadContent()
-#     videoInformation = uploadVideo(content)
-    videoInformation = {
-        'id': 'WsTqANx7E_E'
-        }
+    content = loadContent()
+    videoInformation = uploadVideo(content)
     uploadThumbnail(videoInformation)
