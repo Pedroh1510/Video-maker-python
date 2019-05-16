@@ -3,7 +3,6 @@ import nltk
 import json
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
-
 from robots.state import saveContent,loadContent
 from credential.algorithmiaC import ApiKey as algorithmiaApiKey
 from credential.watsonC import ApiKeyNLU as watsonApiKey
@@ -16,13 +15,21 @@ def robotText():
         iam_apikey= watsonApiKey['iam_apikey']
     )
     
-    def fetchContentFromWikipedia(searchTerm):
+    def fetchContentFromWikipedia(content):
         print('> Wikipedia content downloading')
         algorithmiaAutheticated = algorithmia.client(algorithmiaApiKey)
         wikipediaAlgorithm = algorithmiaAutheticated.algo('web/WikipediaParser/0.1.2')
-        wikipediaResponde = wikipediaAlgorithm.pipe(content['searchTerm']).result
-#         wikipediaContent = wikipediaResponde["content"].encode('utf-8')
-        wikipediaContent = normalize('NFKD', wikipediaResponde["content"]).encode('ASCII', 'ignore').decode('ASCII')
+#         wikipediaResponde = wikipediaAlgorithm.pipe(content['searchTerm']).result
+        
+        wikipediaResponde = wikipediaAlgorithm.pipe({
+            'articleName': content['searchTerm'],
+            'lang': content['language']
+            }).result
+#         wikipediaContent = wikipediaResponde["content"].encode('utf-8').decode('utf-8')
+#         wikipediaContent = normalize('NFKD', wikipediaResponde["content"]).encode('ASCII', 'ignore').decode('ASCII')
+        wikipediaContent = wikipediaResponde["content"]
+#         wikipediaContent = wikipediaResponde["content"].encode('utf-8').decode('utf-8')
+        
         wikipediaUrl = wikipediaResponde['url']
         print('> Wikipedia content downloaded')
         return wikipediaContent, wikipediaUrl
@@ -34,10 +41,12 @@ def robotText():
             allLinesFirtState = list(filter(lambda x: x!='', text.split('\n')))
             allLines = list(filter(lambda x: not(x.startswith('==')), allLinesFirtState))
             allLines = ' '.join(allLines)
-            allLines = normalize('NFKD', allLines).encode('ASCII', 'ignore').decode('ASCII')
+#             allLines = normalize('NFKD', allLines).encode('ASCII', 'ignore').decode('ASCII')
             allLines = allLines.replace(' ()', '')
             allLines = allLines.replace(' ( )', '')
             allLines = allLines.replace('[...]', '')
+#             allLines = allLines.replace('\"', '')
+
             return allLines
             
         withoutBlankLines = removeBlankLinesAndMarkdown(sorceContentOriginal)
@@ -76,8 +85,8 @@ def robotText():
         print('> Fetch keywords of all sentences concluded')
         return content
     
-    content = loadContent()    
-    content['sorceContentOriginal'] ,content['wikipediaUrl'] = fetchContentFromWikipedia(content['searchTerm'])
+    content = loadContent()
+    content['sorceContentOriginal'] ,content['wikipediaUrl'] = fetchContentFromWikipedia(content)
     content['sourceContentSanitize'] = sanitizeContent(content['sorceContentOriginal'])
     content['sentences'] = breakContentSentences(content['sourceContentSanitize'])
     content = limitMaximumSentences(content)
