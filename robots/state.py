@@ -2,17 +2,19 @@ import json
 contentFilePath = './content/content.json'
 scriptFilePath = './content/after-effects-script.js'
 blackListFilePath = './content/blackList/blackList.json'
+from unicodedata import normalize
+
 
 def saveContent(content):
-    with open(contentFilePath,'w') as save:
+    with open(contentFilePath,'w', encoding='utf-8') as save:
         json.dump(content,save)
 def loadContent():
-    with open(contentFilePath,'r') as contentJson:
+    with open(contentFilePath,'r', encoding='utf-8') as contentJson:
         content = json.load(contentJson)
         return content
 
 def saveScript(content):
-    with open(scriptFilePath,'w') as save:
+    with open(scriptFilePath,'w', encoding='utf-8') as save:
         scriptString = 'var content = {}'.format(content)
         save.write(scriptString)
 

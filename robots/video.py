@@ -5,7 +5,6 @@ from wand.font import Font
 from subprocess import Popen, PIPE, CalledProcessError
 import sys
 
-
 rootPath = sys.path[0]
 
 
@@ -45,7 +44,7 @@ def robotVideo():
                     copy.blur(sigma= 0x9, radius= 0x9)
                     copy.composite(original, gravity= center)
                     copy.save(filename=outputFile)
-            print('> Image converted: {}'.format(inputFile))
+            print('> Image converted: {}'.format(outputFile))
         except RuntimeError:
             print('error {}'.format(sentenceIndex))
         
@@ -54,6 +53,13 @@ def robotVideo():
         for sentenceIndex in range(len((content['sentences']))):
             convertImage(sentenceIndex)
         print('> Converting all images completed')
+        
+    def ajustFontSentence(sentenceText):
+        sizeSentence = len(sentenceText)
+        if(sizeSentence>=250):
+            return 50
+        else:
+            return 70
             
     def createSentenceImage(sentenceIndex, sentenceText, templateIndex):
         outputFile = './content/{}-sentence.png'.format(sentenceIndex)
@@ -61,7 +67,7 @@ def robotVideo():
             0: {
               'size': '1920x400',
               'width': 1920,
-              'height': 1080,
+              'height': 400,
               'gravity': 'center',
               'g': 5
             },
@@ -113,9 +119,9 @@ def robotVideo():
         with Color('transparent') as bg:
             with Image(width=w,height=h, background=bg) as img:
                 color = Color('#FFF')
-                a = Font('./robots/fonts/verdana/Verdana.fft',size= 70, color=color)
+                a = Font('./robots/fonts/verdana/Verdana.fft',size= ajustFontSentence(sentenceText), color=color)
                 img.font_color
-                img.caption(text= sentenceText,font= a,gravity= GRAVITY_TYPES[templateSettings[templateIndex]['g']])
+                img.caption(text= sentenceText, font= a, gravity= GRAVITY_TYPES[templateSettings[templateIndex]['g']])
                 img.save(filename=outputFile)
         print('> Sentence {} created: {}'.format(sentenceIndex,outputFile))
         
@@ -142,7 +148,7 @@ def robotVideo():
     def renderVideoWithAfterEffects(content):
         aerender = 'C:\Program Files\Adobe\Adobe After Effects CC 2019\Support Files'
         templateFilePath = '{}/templates/{}/template.aep'.format(rootPath, content['template'])
-        destinationFilePath = '{}/content/output.mp4'.format(rootPath)
+        destinationFilePath = '{}/content/output'.format(rootPath)
         cmd = '''c:
     cd "{}" 
     aerender.exe -comp main -project "{}" -output "{}"
@@ -152,7 +158,7 @@ def robotVideo():
             process = Popen( 'cmd.exe', shell=False, universal_newlines=True,
                              stdin=PIPE, stdout=PIPE, stderr=PIPE )
             out, err = process.communicate( cmd )
-            print(out)
+#             print(out)
         except CalledProcessError as e:                            
             print ("error code: {}".format(e.returncode))
         print('> Terminated After Effects')
@@ -163,4 +169,4 @@ def robotVideo():
     createYouTubeThumbnail()
     saveContent(content)
     createAfterEffectsScript(content)
-    renderVideoWithAfterEffects(content)
+#     renderVideoWithAfterEffects(content)

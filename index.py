@@ -4,15 +4,19 @@ from robots.voice import robotVoice
 from robots.images import robotImages
 from robots.video import robotVideo
 from robots.youtube import robotYoutube
+from robots.state import loadContent
+import json
+import sys
 
 def start():
     user()
-#     robotText()
-#     robotVoice()
-#     robotImages()
+    robotText()
+# #     robotVoice()
+    robotImages()
     robotVideo()
-#     robotYoutube()
+    robotYoutube()
     
-print('Start!')
+print('>Start!')
 start()
-print('Terminated')
+# print(json.dumps(loadContent()['sentences'], indent= 2))
+print('>Terminated')

@@ -1,27 +1,18 @@
 from apiclient.discovery import build
 from apiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
-from robots.state import loadContent
+from robots.state import loadContent, saveContent
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from os.path import getsize
 
 
 def robotYoutube():
     youtube = None
-    def startWebServer():
-        port = 5000
-        server_address = ('', port) 
-        handler_class = SimpleHTTPRequestHandler
-        app = HTTPServer(server_address, handler_class)
-        app.server_activate()
-        return app
-    
-    def stopWebServer(webServer):
-        webServer.server_close()
         
     def createOAuthClient():
         credentials  = './credential/youtubeC.json'
-        SCOPES = ['https://www.googleapis.com/auth/youtube']
+        SCOPES = ['https://www.googleapis.com/auth/youtube',
+                  'https://www.googleapis.com/auth/yt-analytics.readonly']
         OAuthClient = InstalledAppFlow.from_client_secrets_file(credentials, SCOPES)
         return OAuthClient
     
@@ -38,7 +29,8 @@ def robotYoutube():
     
     def setGlobalGoogleAuthentication(authorizationToken):
         youtube = build('youtube','v3',credentials=authorizationToken)
-        return youtube
+        youtubeAnalytics = build('youtubeAnalytics','v2',credentials=authorizationToken)
+        return youtube, youtubeAnalytics
     
     def uploadVideo(content):
         def filtro(value=[]):
@@ -122,9 +114,44 @@ def robotYoutube():
             ).execute()
         print("> Uploaded thumbnails")
         
+    def analitics(youtube):
+        def execute_api_request(client_library_function, **kwargs):
+            response = client_library_function(
+              **kwargs
+            ).execute()
+            return response
+#             print(response)
+        return execute_api_request(
+            youtubeAnalytics.reports().query,
+            ids='channel==MINE',
+            startDate='2019-04-28',
+            endDate='2019-05-12',
+            metrics='estimatedMinutesWatched,views,likes,subscribersGained',
+            dimensions='day',
+            sort='day'
+            )
+        
+    def insertPlaylist(videoInformation):
+        videoID = videoInformation
+        playlistID= 'PL771Qy0TVPUhDz0AmFRcYXW_YbJLgxH_e'
+        youtube.playlistItems().insert(
+            part="snippet",
+            body={
+                'snippet': {
+                    'playlistId': playlistID,
+                    'resourceId': {
+                        'kind': 'youtube#video',
+                        'videoId': videoID
+                        }
+                    }
+                }).execute()
     OAuthClient = createOAuthClient()
     authorizationToken = requestUserConsent(OAuthClient)
-    youtube = setGlobalGoogleAuthentication(authorizationToken)
+    youtube, youtubeAnalytics = setGlobalGoogleAuthentication(authorizationToken)
     content = loadContent()
-    videoInformation = uploadVideo(content)
-    uploadThumbnail(videoInformation)
+#     content['analitics'] = analitics(youtube)
+#     saveContent(content)
+#     videoInformation = uploadVideo(content)
+#     uploadThumbnail(videoInformation)
+    videoInformation = '4LADh7WnQuk'
+    insertPlaylist(videoInformation)

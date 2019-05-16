@@ -9,21 +9,33 @@ def user():
             print('[',i,']',lista[i])
         return int(input(text))
     
-    def askAndReturnPrefix():
-        prefixes = ['Who is','What is','The history of']
+    def askAndReturnPrefix(language):
+        if(language=='en'):
+            prefixes = ['Who is','What is','The history of']
+        else:
+            prefixes = ['Quem é', 'Oque é', 'A história de']
         prefix = redLine(prefixes,'Choose a option: ')
         return prefixes[prefix]
-    
     def askAndReturnTemplate():
-        prefixes = ['Know the world ','Senta que la vem historia - newsroom','Senta que la vem historia - music epic',
-                    'Senta que la vem historia - music evolution']
-        prefix = redLine(prefixes,'Choose a option: ')
+        prefixes = ['Know the world ','Senta que la vem historia - newsroom',
+                    'Senta que la vem historia - music epic',
+                    'Senta que la vem historia - music evolution',
+                    'Senta que la vem historia - music Missing My Girl']
+        prefix = redLine(prefixes,'Choose a Template option: ')
         return prefix+1
+    def askAndReturnLanguage():
+        prefixes = ['English','Portuguese']
+        language = ['en','pt']
+        prefix = redLine(prefixes,'Choose a Language option: ')
+        return language[prefix]
+    
+    language = askAndReturnLanguage()
     
     content={
-      'searchTerm': askAndReturnSearchTerm(),
-      'prefix': askAndReturnPrefix(),
-      'maximumSentences': 7,
-      'template': askAndReturnTemplate()
-      }
+        'language': language,
+        'searchTerm': askAndReturnSearchTerm(),
+        'prefix': askAndReturnPrefix(language),
+        'maximumSentences': 7,
+        'template': askAndReturnTemplate()
+        }
     saveContent(content)
