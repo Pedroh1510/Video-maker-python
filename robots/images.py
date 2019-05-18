@@ -10,13 +10,28 @@ import json
 
 def robotImages():
 
-    def fetchGoogleAndReturnImagesLinks(query):
+    def ajustFetchGoogle(service,query,sentenceIndex):
+        if(sentenceIndex>0):
+            response = service.cse().list(
+                cx=googleSearchCredentials['searchEngineId'],
+                q=query,
+                searchType='image',
+                num=10,
+                filter = '1').execute()
+            return response
+        else:
+            response = service.cse().list(
+                cx=googleSearchCredentials['searchEngineId'],
+                q=query,
+                searchType='image',
+                num=10,
+                filter = '1',
+                imgSize = 'xxlarge').execute()
+            return response
+
+    def fetchGoogleAndReturnImagesLinks(query, sentenceIndex):
         service = build("customsearch", "v1", developerKey=googleSearchCredentials['apiKey'])
-        response = service.cse().list(
-            cx = googleSearchCredentials['searchEngineId'],
-            q = query,
-            searchType = 'image',
-            num = 10).execute()
+        response = ajustFetchGoogle(service, query, sentenceIndex)
         def filtro(value=[]):
                 return value['link']
         if not 'items' in response:
@@ -33,11 +48,9 @@ def robotImages():
     
     def fetchImagesOfAllSentences(content):
         print('> Fetching images of all sentences...')
-        for sentence in content['sentences']:
+        for sentenceIndex, sentence in enumerate(content['sentences']):
             query = ajustFetchImages(content, sentence['keywords'][0])
-            sentence['images'] = fetchGoogleAndReturnImagesLinks(query)
-#             query = ajustFetchImages(content, sentence['keywords'][1])
-#             sentence['images'] = sentence['images'].extend(fetchGoogleAndReturnImagesLinks(query))
+            sentence['images'] = fetchGoogleAndReturnImagesLinks(query, sentenceIndex)
             sentence['googleSeachQuery'] = query
         print('> Fetch images of all sentences concluded')
     

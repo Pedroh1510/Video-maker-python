@@ -34,7 +34,6 @@ def robotText():
         print('> Wikipedia content downloaded')
         return wikipediaContent, wikipediaUrl
 
-
     def sanitizeContent(sorceContentOriginal):
         def removeBlankLinesAndMarkdown(text):
             text = str(text)

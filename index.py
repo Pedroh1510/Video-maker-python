@@ -11,11 +11,11 @@ import sys
 def start():
     user()
     robotText()
-# #     robotVoice()
+#     robotVoice()
     robotImages()
     robotVideo()
     robotYoutube()
-    
+
 print('> Start!')
 start()
 # print(json.dumps(loadContent()['sentences'], indent= 2))
