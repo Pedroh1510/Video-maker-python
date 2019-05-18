@@ -45,7 +45,7 @@ def robotText():
             allLines = allLines.replace(' ()', '')
             allLines = allLines.replace(' ( )', '')
             allLines = allLines.replace('[...]', '')
-#             allLines = allLines.replace('\"', '')
+            # allLines = allLines.replace('%u', '\u')
 
             return allLines
             

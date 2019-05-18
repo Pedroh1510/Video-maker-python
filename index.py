@@ -16,7 +16,7 @@ def start():
     robotVideo()
     robotYoutube()
     
-print('>Start!')
+print('> Start!')
 start()
 # print(json.dumps(loadContent()['sentences'], indent= 2))
-print('>Terminated')
+print('> Terminated')

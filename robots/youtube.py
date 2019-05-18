@@ -132,8 +132,9 @@ def robotYoutube():
             )
         
     def insertPlaylist(videoInformation):
+        print("> Inserting into the playlist")
         videoID = videoInformation
-        playlistID= 'PL771Qy0TVPUhDz0AmFRcYXW_YbJLgxH_e'
+        playlistID= 'PL771Qy0TVPUgObnm_RfHgMI0RuJCHbzMP'
         youtube.playlistItems().insert(
             part="snippet",
             body={
@@ -145,13 +146,13 @@ def robotYoutube():
                         }
                     }
                 }).execute()
+        print("> Inserted into the playlist")
     OAuthClient = createOAuthClient()
     authorizationToken = requestUserConsent(OAuthClient)
     youtube, youtubeAnalytics = setGlobalGoogleAuthentication(authorizationToken)
     content = loadContent()
 #     content['analitics'] = analitics(youtube)
 #     saveContent(content)
-#     videoInformation = uploadVideo(content)
-#     uploadThumbnail(videoInformation)
-    videoInformation = '4LADh7WnQuk'
+    videoInformation = uploadVideo(content)
+    uploadThumbnail(videoInformation)
     insertPlaylist(videoInformation)
