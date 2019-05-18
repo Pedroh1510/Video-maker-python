@@ -147,6 +147,7 @@ def robotYoutube():
                     }
                 }).execute()
         print("> Inserted into the playlist")
+
     OAuthClient = createOAuthClient()
     authorizationToken = requestUserConsent(OAuthClient)
     youtube, youtubeAnalytics = setGlobalGoogleAuthentication(authorizationToken)

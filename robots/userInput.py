@@ -1,6 +1,7 @@
 from robots.state import saveContent
 
 def user():
+
     def askAndReturnSearchTerm():
         return str(input('Type a Wikipedia search term: ')).title()
     
@@ -16,6 +17,7 @@ def user():
             prefixes = ['Quem é', 'Oque é', 'A história de']
         prefix = redLine(prefixes,'Choose a option: ')
         return prefixes[prefix]
+
     def askAndReturnTemplate():
         prefixes = ['Know the world ','Senta que la vem historia - newsroom',
                     'Senta que la vem historia - music epic',
@@ -23,6 +25,7 @@ def user():
                     'Senta que la vem historia - music Missing My Girl']
         prefix = redLine(prefixes,'Choose a Template option: ')
         return prefix+1
+
     def askAndReturnLanguage():
         prefixes = ['English','Portuguese']
         language = ['en','pt']

@@ -9,6 +9,7 @@ import json
 
 
 def robotImages():
+
     def fetchGoogleAndReturnImagesLinks(query):
         service = build("customsearch", "v1", developerKey=googleSearchCredentials['apiKey'])
         response = service.cse().list(
@@ -40,7 +41,6 @@ def robotImages():
             sentence['googleSeachQuery'] = query
         print('> Fetch images of all sentences concluded')
     
-    
     def downloadAndSave(url, fileName):
         fileName = 'content/'+fileName
         f  = open(fileName,'wb')
@@ -54,6 +54,7 @@ def robotImages():
             return True
         except:
             return False
+
     def viewImage(imageUrl):
         try:
             im = Image.open(requests.get(imageUrl, stream=True).raw)
@@ -131,8 +132,7 @@ def robotImages():
                 except:
                     print("> {} {} Erro ao baixar: {}".format(sentenceIndex,imageIndex,imageUrl))
         print('> Downloaded all images...')
-        
-        
+
     content = loadContent()
     fetchImagesOfAllSentences(content)
     saveContent(content)

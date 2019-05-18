@@ -9,6 +9,7 @@ rootPath = sys.path[0]
 
 
 def robotVideo():
+
     def convertImage(sentenceIndex):
         def ajustImage(imageOriginal,widthDefault,heightDefault,proportionDefault):
             width = imageOriginal.size[0]
