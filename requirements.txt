@@ -1,7 +1,10 @@
-Wand==0.5.3
+opencv_python==3.4.2.16
 nltk==3.4
+Wand==0.5.3
 watson_developer_cloud==2.8.0
+numpy==1.15.4
 requests==2.21.0
 google_auth_oauthlib==0.3.0
 Algorithmia==1.1.4
+Pillow==6.0.0
 google_api_python_client==1.7.8
