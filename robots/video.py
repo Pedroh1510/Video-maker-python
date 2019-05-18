@@ -169,4 +169,4 @@ def robotVideo():
     createYouTubeThumbnail()
     saveContent(content)
     createAfterEffectsScript(content)
-#     renderVideoWithAfterEffects(content)
+    renderVideoWithAfterEffects(content)
