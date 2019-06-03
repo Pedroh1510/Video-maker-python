@@ -134,7 +134,7 @@ def robotYoutube():
     def insertPlaylist(videoInformation):
         print("> Inserting into the playlist")
         videoID = videoInformation
-        playlistID= 'PL771Qy0TVPUgObnm_RfHgMI0RuJCHbzMP'
+        playlistID= 'PL771Qy0TVPUh9Vdnk7ezLpED0F3aAiz7Z'
         youtube.playlistItems().insert(
             part="snippet",
             body={

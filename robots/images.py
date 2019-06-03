@@ -1,6 +1,7 @@
 from googleapiclient.discovery import build
 from robots.state import saveContent, loadContent, loadBlackList, saveBlackList
 from credential.googleSearch import googleSearchCredentials
+from wand.image import Image as ImageWand
 from PIL import Image
 import requests
 import cv2
@@ -81,25 +82,54 @@ def robotImages():
             return True
         return False
 
-    def checkDuplicatedImage(sentenceIndex, imageIndex, imageUrl):
+    def checkDuplicatedImage(sentenceIndex, imageUrl):
         def url_to_image(url):
             resp = requests.get(url)
             image = np.asarray(bytearray(resp.content), dtype="uint8")
             image = cv2.imdecode(image, cv2.IMREAD_COLOR)
             return image
 
-        image_to_compare = url_to_image(imageUrl)
-        for i in range(0, sentenceIndex):
-            filename = 'content/{}-original.png'.format(i)
+        def ajustSize(filename, output):
+            with ImageWand(filename= filename) as ima:
+                a, b = ima.size
+                scale = 0.25
+                a = int(a * scale)
+                b = int(b * scale)
+                ima.resize(a, b)
+                # image.transform(resize='150')
+                ima.save(filename=output)
+        def ajustSizeToAllImages():
+            for i in range(sentenceIndex):
+                filename = 'content/{}-original.png'.format(i)
+                output = 'content/ajust/{}-original.png'.format(i)
+                ajustSize(filename, output)
+
+        def downloadImageAndAjust(url):
+            filename = 'content/ajust/internetOriginal.png'
+            output = 'content/ajust/internet.png'
+            f = open(filename, 'wb')
+            f.write(requests.get(url).content)
+            f.close()
+            ajustSize(filename, output)
+
+        # image_to_compare = url_to_image(imageUrl)
+        downloadImageAndAjust(imageUrl)
+        image_to_compare = cv2.imread('content/ajust/internet.png')
+
+        for i in range(sentenceIndex):
+            ajustSizeToAllImages()
+            filename = 'content/ajust/{}-original.png'.format(i)
             original = cv2.imread(filename)
             if original.shape == image_to_compare.shape:
                 difference = cv2.subtract(original, image_to_compare)
                 b, g, r = cv2.split(difference)
                 if cv2.countNonZero(b) == 0 and cv2.countNonZero(g) == 0 and cv2.countNonZero(r) == 0:
                     return True
-            sift = cv2.xfeatures2d.SIFT_create()
-            kp_1, desc_1 = sift.detectAndCompute(original, None)
-            kp_2, desc_2 = sift.detectAndCompute(image_to_compare, None)
+            detector = cv2.BRISK_create()
+            kp_1, desc_1 = detector.detectAndCompute(original, None)
+            kp_2, desc_2 = detector.detectAndCompute(image_to_compare, None)
+            desc_1 = desc_1.astype('float32')
+            desc_2 = desc_2.astype('float32')
             index_params = dict(algorithm=0, trees=5)
             search_params = dict()
             flann = cv2.FlannBasedMatcher(index_params, search_params)
@@ -109,7 +139,7 @@ def robotImages():
             for m, n in matches:
                 if m.distance < ratio * n.distance:
                     good_points.append(m)
-            if (len(good_points) > 50):
+            if (len(good_points) > 40):
                 return True
         return False
 
@@ -132,7 +162,7 @@ def robotImages():
                     print("> {} {} Erro nao foi possivel abrir a imagem: {}".format(sentenceIndex,imageIndex,imageUrl))
                     continue
                 elif(sentenceIndex>0):
-                    if(checkDuplicatedImage(sentenceIndex, imageIndex, imageUrl)):
+                    if(checkDuplicatedImage(sentenceIndex-1, imageUrl)):
                         print("> {} {} Erro imagem duplicada: {}".format(sentenceIndex,imageIndex,imageUrl))
                         continue
 #                 elif(viewImage(imageUrl)):
