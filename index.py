@@ -6,7 +6,6 @@ from robots.video import robotVideo
 from robots.youtube import robotYoutube
 from robots.state import loadContent
 import json
-import sys
 
 def start():
     user()

@@ -1,12 +1,10 @@
 import Algorithmia as algorithmia
 import nltk
-import json
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
 from robots.state import saveContent,loadContent
 from credential.algorithmiaC import ApiKey as algorithmiaApiKey
 from credential.watsonC import ApiKeyNLU as watsonApiKey
-from unicodedata import normalize
 
 def robotText():
     service = NaturalLanguageUnderstandingV1(
@@ -40,11 +38,9 @@ def robotText():
             allLinesFirtState = list(filter(lambda x: x!='', text.split('\n')))
             allLines = list(filter(lambda x: not(x.startswith('==')), allLinesFirtState))
             allLines = ' '.join(allLines)
-#             allLines = normalize('NFKD', allLines).encode('ASCII', 'ignore').decode('ASCII')
             allLines = allLines.replace(' ()', '')
             allLines = allLines.replace(' ( )', '')
             allLines = allLines.replace('[...]', '')
-            # allLines = allLines.replace('%u', '\u')
 
             return allLines
             
@@ -73,9 +69,10 @@ def robotText():
         response = service.analyze(
             text=sentence,
             features=Features(entities=EntitiesOptions(),keywords=KeywordsOptions())).get_result()
-        def filtro(value=[]):
-            return value['text']
-        return list(map(filtro,response['keywords']))
+        # def filtro(value=[]):
+        #     return value['text']
+        # return list(map(filtro,response['keywords']))
+        return [response['keywords'][i]['text'] for i in range(len(response['keywords']))]
     
     def fetchKeywordsOfAllSentences(content):
         print('> Fetching keywords of all sentences...')

@@ -1,8 +1,7 @@
 from apiclient.discovery import build
 from apiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
-from robots.state import loadContent, saveContent
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from robots.state import loadContent
 from os.path import getsize
 
 
@@ -40,7 +39,8 @@ def robotYoutube():
         videoTitle = '{} {}'.format(content['prefix'],content['searchTerm'])
         videoTags = [content['searchTerm']]
         videoTags.extend(content['sentences'][0]['keywords'])
-        videoDescription = '\n\n'.join(list(map(filtro,content['sentences'])))
+        # videoDescription = '\n\n'.join(list(map(filtro,content['sentences'])))
+        videoDescription = '\n\n'.join([content['sentences'][i]['text'] for i in range(len(content['sentences']))])
         idealizer = 'https://www.youtube.com/channel/UCU5JicSrEM5A63jkJ2QvGYw'
         credits = '''\n\nCredits:
 -Wikipedia: {}
@@ -64,7 +64,7 @@ def robotYoutube():
            content['downloadedImages'][6],
            idealizer)
         videoDescription += credits
-        if(content['template']>1):
+        if content['template'] > 1:
             videoDescription += '\n-Music: https://www.bensound.com/royalty-free-music'
         
         requestParameters = {
