@@ -1,9 +1,9 @@
+import sys
+from subprocess import Popen, PIPE, CalledProcessError
 from robots.state import loadContent, saveContent, saveScript
 from wand.image import Image, GRAVITY_TYPES
 from wand.color import Color
 from wand.font import Font
-from subprocess import Popen, PIPE, CalledProcessError
-import sys
 
 rootPath = sys.path[0]
 
@@ -21,13 +21,11 @@ def robotVideo():
             differenceHeight = height - heightDefault
             if round(proportion, 2) == round(proportionDefault, 2):
                 imageOriginal.resize(int(widthDefault/proportionDefault), int(heightDefault/proportionDefault))
-                return imageOriginal
-            if differenceWidth > differenceHeight:
+            elif differenceWidth > differenceHeight:
                 imageOriginal.transform(resize= '{}'.format(ajustWidth))
-                return imageOriginal
             elif differenceHeight > differenceWidth:
                 imageOriginal.transform(resize= 'x{}'.format(ajustHeight))
-                return imageOriginal
+            return imageOriginal
             
         
         inputFile = './content/{}-original.png'.format(sentenceIndex)
@@ -121,7 +119,7 @@ def robotVideo():
             with Image(width=w,height=h, background=bg) as img:
                 color = Color('#FFF')
                 a = Font('./robots/fonts/verdana/Verdana.fft',size= ajustFontSentence(sentenceText), color=color)
-                img.font_color
+                # img.font_color
                 img.caption(text= sentenceText, font= a, gravity= GRAVITY_TYPES[templateSettings[templateIndex]['g']])
                 img.save(filename=outputFile)
         print('> Sentence {} created: {}'.format(sentenceIndex,outputFile))

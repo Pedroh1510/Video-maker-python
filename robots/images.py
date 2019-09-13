@@ -32,8 +32,8 @@ def robotImages():
     def fetchGoogleAndReturnImagesLinks(query, sentenceIndex):
         service = build("customsearch", "v1", developerKey=googleSearchCredentials['apiKey'])
         response = ajustFetchGoogle(service, query, sentenceIndex)
-        def filtro(value=[]):
-                return value['link']
+        # def filtro(value=[]):
+        #         return value['link']
         if not 'items' in response:
             return None
         else:
@@ -158,7 +158,7 @@ def robotImages():
                 elif imageUrl in blackList:
                     print("> {} {} Erro imagem na Black List: {}".format(sentenceIndex,imageIndex,imageUrl))
                     continue
-                elif not(checkSupportImage(imageUrl)):
+                elif not checkSupportImage(imageUrl):
                     print("> {} {} Erro nao foi possivel abrir a imagem: {}".format(sentenceIndex,imageIndex,imageUrl))
                     continue
                 elif sentenceIndex>0:
