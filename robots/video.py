@@ -19,13 +19,13 @@ def robotVideo():
             ajustHeight = heightDefault/proportionDefault
             differenceWidth = width - widthDefault
             differenceHeight = height - heightDefault
-            if(round(proportion, 2) == round(proportionDefault, 2)):
+            if round(proportion, 2) == round(proportionDefault, 2):
                 imageOriginal.resize(int(widthDefault/proportionDefault), int(heightDefault/proportionDefault))
                 return imageOriginal
-            if(differenceWidth > differenceHeight):
+            if differenceWidth > differenceHeight:
                 imageOriginal.transform(resize= '{}'.format(ajustWidth))
                 return imageOriginal
-            elif(differenceHeight > differenceWidth):
+            elif differenceHeight > differenceWidth:
                 imageOriginal.transform(resize= 'x{}'.format(ajustHeight))
                 return imageOriginal
             
@@ -57,7 +57,7 @@ def robotVideo():
         
     def ajustFontSentence(sentenceText):
         sizeSentence = len(sentenceText)
-        if(sizeSentence>=250):
+        if sizeSentence >= 250:
             return 50
         else:
             return 70
@@ -130,7 +130,7 @@ def robotVideo():
         print('> Creating all sentences images...')
         templateIndex = 0
         for sentenceIndex in range(len((content['sentences']))):
-            if(templateIndex>6):
+            if templateIndex > 6:
                 templateIndex = 0
             createSentenceImage(sentenceIndex, content['sentences'][sentenceIndex]['text'], templateIndex)
             templateIndex += 1

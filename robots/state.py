@@ -2,7 +2,6 @@ import json
 contentFilePath = './content/content.json'
 scriptFilePath = './content/after-effects-script.js'
 blackListFilePath = './content/blackList/blackList.json'
-from unicodedata import normalize
 
 
 def saveContent(content):

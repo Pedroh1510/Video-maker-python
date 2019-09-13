@@ -6,13 +6,12 @@ from PIL import Image
 import requests
 import cv2
 import numpy as np
-import json
 
 
 def robotImages():
 
     def ajustFetchGoogle(service,query,sentenceIndex):
-        if(sentenceIndex>0):
+        if sentenceIndex > 0:
             response = service.cse().list(
                 cx=googleSearchCredentials['searchEngineId'],
                 q=query,
@@ -38,10 +37,11 @@ def robotImages():
         if not 'items' in response:
             return None
         else:
-            return list(map(filtro,response['items']))
+            return [response['items'][i]['link'] for i in range(len(response['items']))]
+            # return list(map(filtro,response['items']))
         
     def ajustFetchImages(content, sentence):
-        if(content['searchTerm'].lower() in sentence.lower()):
+        if content['searchTerm'].lower() in sentence.lower():
             return content['searchTerm']
         else:
             query = '{} {}'.format(content['searchTerm'], sentence)
@@ -75,7 +75,7 @@ def robotImages():
             im.show()
             print()
             decition = str(input('Use this image?(y/n) '))
-            if(decition != 'y'):
+            if decition != 'y':
                 saveBlackList(imageUrl)
                 return True
         except:
@@ -139,7 +139,7 @@ def robotImages():
             for m, n in matches:
                 if m.distance < ratio * n.distance:
                     good_points.append(m)
-            if (len(good_points) > 40):
+            if len(good_points) > 40:
                 return True
         return False
 
@@ -152,17 +152,17 @@ def robotImages():
                 imageUrl = images[imageIndex]
                 blackList = loadBlackList()['blackList']
                 
-                if(imageUrl in (content['downloadedImages'] or blackList)):
+                if imageUrl in (content['downloadedImages'] or blackList):
                     print("> {} {} Erro imagem ja existe: {}".format(sentenceIndex,imageIndex,imageUrl))
                     continue
-                elif(imageUrl in blackList):
+                elif imageUrl in blackList:
                     print("> {} {} Erro imagem na Black List: {}".format(sentenceIndex,imageIndex,imageUrl))
                     continue
-                elif(not(checkSupportImage(imageUrl))):
+                elif not(checkSupportImage(imageUrl)):
                     print("> {} {} Erro nao foi possivel abrir a imagem: {}".format(sentenceIndex,imageIndex,imageUrl))
                     continue
-                elif(sentenceIndex>0):
-                    if(checkDuplicatedImage(sentenceIndex-1, imageUrl)):
+                elif sentenceIndex>0:
+                    if checkDuplicatedImage(sentenceIndex-1, imageUrl):
                         print("> {} {} Erro imagem duplicada: {}".format(sentenceIndex,imageIndex,imageUrl))
                         continue
 #                 elif(viewImage(imageUrl)):
