@@ -119,7 +119,7 @@ def robotVideo():
             with Image(width=w,height=h, background=bg) as img:
                 color = Color('#FFF')
                 a = Font('./robots/fonts/verdana/Verdana.fft',size= ajustFontSentence(sentenceText), color=color)
-                img.font_color
+                # img.font_color
                 img.caption(text= sentenceText, font= a, gravity= GRAVITY_TYPES[templateSettings[templateIndex]['g']])
                 img.save(filename=outputFile)
         print('> Sentence {} created: {}'.format(sentenceIndex,outputFile))
