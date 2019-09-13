@@ -1,8 +1,8 @@
+from os.path import getsize
 from apiclient.discovery import build
 from apiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from robots.state import loadContent
-from os.path import getsize
 
 
 def robotYoutube():
@@ -32,8 +32,8 @@ def robotYoutube():
         return youtube, youtubeAnalytics
     
     def uploadVideo(content):
-        def filtro(value=[]):
-            return value['text']
+        # def filtro(value=[]):
+        #     return value['text']
         videoFilePath = './content/output.mp4'
         videoFileSize = getsize(videoFilePath)
         videoTitle = '{} {}'.format(content['prefix'],content['searchTerm'])
