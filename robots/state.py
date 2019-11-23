@@ -28,3 +28,6 @@ def saveBlackList(url):
     content['blackList'].append(url)
     with open(blackListFilePath,'w') as save:
         json.dump(content,save)
+
+if __name__ == "__main__":
+    saveContent('aaaaa')

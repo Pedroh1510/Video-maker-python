@@ -1,8 +1,9 @@
 from os.path import getsize
-from apiclient.discovery import build
-from apiclient.http import MediaFileUpload
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from robots.state import loadContent
+from hurry.filesize import size
 
 
 def robotYoutube():
@@ -10,8 +11,10 @@ def robotYoutube():
         
     def createOAuthClient():
         credentials  = './credential/youtubeC.json'
+
         SCOPES = ['https://www.googleapis.com/auth/youtube',
                   'https://www.googleapis.com/auth/yt-analytics.readonly']
+
         OAuthClient = InstalledAppFlow.from_client_secrets_file(credentials, SCOPES)
         return OAuthClient
     
@@ -35,7 +38,7 @@ def robotYoutube():
         # def filtro(value=[]):
         #     return value['text']
         videoFilePath = './content/output.mp4'
-        videoFileSize = getsize(videoFilePath)
+        videoFileSize = size(getsize(videoFilePath))
         videoTitle = '{} {}'.format(content['prefix'],content['searchTerm'])
         videoTags = [content['searchTerm']]
         videoTags.extend(content['sentences'][0]['keywords'])
@@ -88,8 +91,8 @@ def robotYoutube():
             body= requestParameters['requestBody'],
             media_body= requestParameters['media']['body']
             )
-        print("> Uploading video file...")
-        status, response = youtubeResponse.next_chunk()
+        print("> Uploading video file...",videoFileSize+"b")
+        _, response = youtubeResponse.next_chunk()
         if 'id' in response:
             print('> Video available at: https://youtu.be/{}'.format(response['id']))
             return response['id']
