@@ -1,48 +1,49 @@
 import sys
 from subprocess import Popen, PIPE, CalledProcessError
 from robots.state import loadContent, saveContent, saveScript
-from wand.image import Image, GRAVITY_TYPES
-from wand.color import Color
-from wand.font import Font
+from PIL import Image, ImageFilter, ImageDraw
+import cv2
+import numpy as np
+import textwrap
+import glob
+import moviepy.editor as mp
 
 rootPath = sys.path[0]
 
-
 def robotVideo():
-
+    
     def convertImage(sentenceIndex):
-        def ajustImage(imageOriginal,widthDefault,heightDefault,proportionDefault):
+        def adjustImage(imageOriginal,widthDefault,heightDefault,proportionDefault):
             width = imageOriginal.size[0]
             height = imageOriginal.size[1]
             proportion = width / height
-            ajustWidth = widthDefault/proportionDefault 
-            ajustHeight = heightDefault/proportionDefault
+            adjustWidth = widthDefault/proportionDefault 
+            adjustHeight = heightDefault/proportionDefault
             differenceWidth = width - widthDefault
             differenceHeight = height - heightDefault
             if round(proportion, 2) == round(proportionDefault, 2):
-                imageOriginal.resize(int(widthDefault/proportionDefault), int(heightDefault/proportionDefault))
+                imageOriginal.resize((int(widthDefault/proportionDefault), int(heightDefault/proportionDefault)))
             elif differenceWidth > differenceHeight:
-                imageOriginal.transform(resize= '{}'.format(ajustWidth))
-            elif differenceHeight > differenceWidth:
-                imageOriginal.transform(resize= 'x{}'.format(ajustHeight))
+                imageOriginal.resize((int(adjustWidth),int(height/proportion)))
+            elif differenceWidth < differenceHeight:
+                imageOriginal.resize((int(width/proportion),int(adjustHeight)))
             return imageOriginal
-            
-        
+
         inputFile = './content/{}-original.png'.format(sentenceIndex)
         outputFile = './content/{}-converted.png'.format(sentenceIndex)
-        center = GRAVITY_TYPES[5]
         width = 1920
         height = 1080
         proportionDefault = width / height
         try:
-            with Image(filename=inputFile) as original:
-                original.format = 'png'
-                original = ajustImage(original, width, height, proportionDefault)
-                with original.clone() as copy:
-                    copy.resize(width= width, height= height)
-                    copy.blur(sigma= 0x9, radius= 0x9)
-                    copy.composite(original, gravity= center)
-                    copy.save(filename=outputFile)
+            with Image.open(inputFile) as original:
+                original = adjustImage(original,width,height,proportionDefault)
+                size=[original.size[0]//2, original.size[1]//2]
+                with original.copy() as copy:
+                    copy = copy.resize((width,height))
+                    copy = copy.filter(ImageFilter.GaussianBlur(5))
+                    copy.paste(original,((width//2)-size[0],(height//2)-size[1]))
+                    copy.save(outputFile)
+                
             print('> Image converted: {}'.format(outputFile))
         except RuntimeError:
             print('error {}'.format(sentenceIndex))
@@ -53,12 +54,51 @@ def robotVideo():
             convertImage(sentenceIndex)
         print('> Converting all images completed')
         
-    def ajustFontSentence(sentenceText):
-        sizeSentence = len(sentenceText)
+    def adjustFontSentence(text):
+        sizeSentence = len(text)
+        if sizeSentence>=150 and sizeSentence<=250:
+            return 1.8
         if sizeSentence >= 250:
-            return 50
+            return 1.3
         else:
-            return 70
+            return 2
+
+    def adjustTextWratSentence(sentenceText,w,h):
+        sizeSentence = len(sentenceText)
+
+        if w>=1080 and h == 1080:
+            return 40
+        if w<=900 and h==1080:
+            return 20
+        if w==1920 and h<=540:
+            return 60
+        else:
+            return 20
+
+    def writeText(filename, text,w,h):
+        img = np.zeros((h, w, 4),dtype=np.uint8)
+        height, width, channel = img.shape
+        text_img = np.zeros((height, width,4))
+        font = cv2.FONT_HERSHEY_TRIPLEX
+        wrapped_text = textwrap.wrap(text, width=adjustTextWratSentence(text,width,height))
+        x, y = 10, 40
+        font_size = adjustFontSentence(text)
+        font_thickness = 2
+        
+        i=0
+        for line in wrapped_text:
+            textsize = cv2.getTextSize(line, font, font_size, font_thickness)[0]
+            
+            gap = textsize[1] + 25
+            y = int((img.shape[0] + textsize[1]) / 10) + i * gap
+            x = int((img.shape[1] - textsize[0]) / 5)
+            cv2.putText(img, line, (x, y), font,
+                font_size, 
+                (255,255,255,250),
+                font_thickness, 
+                lineType = cv2.LINE_AA)
+            i+=1
+        cv2.imwrite(filename,img)
             
     def createSentenceImage(sentenceIndex, sentenceText, templateIndex):
         outputFile = './content/{}-sentence.png'.format(sentenceIndex)
@@ -115,15 +155,8 @@ def robotVideo():
           }
         w = templateSettings[templateIndex]['width']
         h = templateSettings[templateIndex]['height']
-        with Color('transparent') as bg:
-            with Image(width=w,height=h, background=bg) as img:
-                color = Color('#FFF')
-                a = Font('./robots/fonts/verdana/Verdana.fft',size= ajustFontSentence(sentenceText), color=color)
-                # img.font_color
-                img.caption(text= sentenceText, font= a, gravity= GRAVITY_TYPES[templateSettings[templateIndex]['g']])
-                img.save(filename=outputFile)
-        print('> Sentence {} created: {}'.format(sentenceIndex,outputFile))
-        
+        writeText(outputFile,sentenceText,w,h)
+
     def createAllSentenceImages(content):
         print('> Creating all sentences images...')
         templateIndex = 0
@@ -136,36 +169,55 @@ def robotVideo():
     
     def createYouTubeThumbnail():
         print('> Creating YouTube thumbnail')
-        with Image(filename='./content/0-converted.png') as img:
-            img.convert('jpg')
-            img.save(filename= 'content/youtube-thumbnail.jpg')
+        with Image.open('./content/0-converted.png') as img:
+            img.save('content/youtube-thumbnail.png',"PNG")
         print('> Created YouTube thumbnail')
-        
-    def createAfterEffectsScript(content):
-        saveScript(content)
-            
-    def renderVideoWithAfterEffects(content):
-        aerender = 'C:\Program Files\Adobe\Adobe After Effects CC 2019\Support Files'
-        templateFilePath = '{}/templates/{}/template.aep'.format(rootPath, content['template'])
-        destinationFilePath = '{}/content/output'.format(rootPath)
-        cmd = '''c:
-    cd "{}" 
-    aerender.exe -comp main -project "{}" -output "{}"
-    '''.format(aerender, templateFilePath, destinationFilePath)
-        print('> Starting After Effects')
-        try:
-            process = Popen( 'cmd.exe', shell=False, universal_newlines=True,
-                             stdin=PIPE, stdout=PIPE, stderr=PIPE )
-            out, err = process.communicate( cmd )
-#             print(out)
-        except CalledProcessError as e:                            
-            print ("error code: {}".format(e.returncode))
-        print('> Terminated After Effects')
-        
+
+    def createImageVideo(imageIndex,imageIndexOutput):
+        inputImage = f'./content/{imageIndex}-converted.png'
+        inputImageSentence = f'./content/{imageIndex}-sentence.png'
+        outputFile = f'./content/final/image{imageIndexOutput}.png'
+        originalImage = Image.open(inputImage,'r')
+        originalImageSentence = Image.open(inputImageSentence,'r')
+        text_img = Image.new('RGBA', (1920,1080), (0, 0, 0, 0))
+        text_img.paste(originalImage, (0,0))
+        img = Image.new('RGBA', (1920,1080), (0, 0, 0, 10))
+        img.paste(originalImageSentence, (0,0), mask=originalImageSentence)
+        text_img = Image.blend(img,text_img,.2)
+        text_img.save(outputFile,'PNG')
+
+    def createAllImagesVideo():
+        print('> Creating all images of video...')
+        for imageIndex in range(len(glob.glob('./content/*-converted.png'))):
+            for i in range(10):
+                a=f'0{imageIndex}{i}'
+                createImageVideo(imageIndex,a)
+        print('> Creating all images of video completed')
+    
+    def createVideo():
+        imgArray=[]
+        for filename in glob.glob('./content/final/*.png'):
+            img = cv2.imread(filename)
+            height, width, layers = img.shape
+            size = (width,height)
+            imgArray.append(img)
+        out = cv2.VideoWriter('./content/final/project.mp4',cv2.VideoWriter_fourcc(*'MP4V'), 1, size)
+        for i in range(len(imgArray)):
+            out.write(imgArray[i])
+        out.release()
+
+    def addAudioInVideo():
+        file = "./templates/3/bensound-epic.mp3"
+        video = mp.VideoFileClip("./content/final/project.mp4")
+        audio = mp.AudioFileClip("./templates/3/bensound-epic.mp3")
+        video = video.set_audio(audio.set_duration(video.duration))
+        video.write_videofile("./content/final/project_audio.mp4")
+
     content = loadContent()
     convertAllImages(content)
     createAllSentenceImages(content)
     createYouTubeThumbnail()
     saveContent(content)
-    createAfterEffectsScript(content)
-    renderVideoWithAfterEffects(content)
+    createAllImagesVideo()
+    createVideo()
+    addAudioInVideo()

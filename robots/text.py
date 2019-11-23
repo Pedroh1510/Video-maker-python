@@ -51,7 +51,7 @@ def robotText():
         conteudo=[]
         sent_tokenizer = nltk.tokenize.PunktSentenceTokenizer()
         sentences = sent_tokenizer.tokenize(text)
-        for i, item in enumerate(sentences):
+        for i,_ in enumerate(sentences):
             a = {'text': sentences[i],
                  'keywords': [],
                  'images': []
@@ -76,7 +76,7 @@ def robotText():
     
     def fetchKeywordsOfAllSentences(content):
         print('> Fetching keywords of all sentences...')
-        for i,item in enumerate(content['sentences']):
+        for i,_ in enumerate(content['sentences']):
             content['sentences'][i]['keywords'] = fetchWatsonAndReturnKeywords(content['sentences'][i]['text'])
         print('> Fetch keywords of all sentences concluded')
         return content

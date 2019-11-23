@@ -113,8 +113,8 @@ credential/*json
 
 # Content
 aaaaaaaaa.py
-content/*png
-content/*jpg
+content/*.png
+content/*.jpg
 content.json
 content.txt
 *audio.wav
@@ -123,10 +123,18 @@ content.txt
 after-effects-script.js
 draw-word-wrap.png
 *sentence.png
+content/final/*.mp4
+content/final/*.png
+content/ajust
+content/Thumbnail's
 
 # BlackList
 blackList.json
 
-# templates/1/
-Logs de template.aep/
-Salvamento automático do Adobe After Effects/
+# templates/
+/templates
+
+# main
+out.wmv
+output.ppm
+/.vscode

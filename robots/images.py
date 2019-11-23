@@ -1,7 +1,7 @@
 from googleapiclient.discovery import build
 from robots.state import saveContent, loadContent, loadBlackList, saveBlackList
 from credential.googleSearch import googleSearchCredentials
-from wand.image import Image as ImageWand
+# from wand.image import Image as ImageWand
 from PIL import Image
 import requests
 import cv2
@@ -18,7 +18,6 @@ def robotImages():
                 searchType='image',
                 num=10,
                 filter = '1').execute()
-            return response
         else:
             response = service.cse().list(
                 cx=googleSearchCredentials['searchEngineId'],
@@ -26,8 +25,8 @@ def robotImages():
                 searchType='image',
                 num=10,
                 filter = '1',
-                imgSize = 'xxlarge').execute()
-            return response
+                imgSize = 'xxlarge').execute()    
+        return response
 
     def fetchGoogleAndReturnImagesLinks(query, sentenceIndex):
         service = build("customsearch", "v1", developerKey=googleSearchCredentials['apiKey'])
@@ -82,6 +81,12 @@ def robotImages():
             return True
         return False
 
+    def checkTypeImage(imageUrl):
+        contCarac = len(imageUrl)
+        if 'png' in imageUrl[contCarac-3:contCarac]:
+            return True
+        return False
+
     def checkDuplicatedImage(sentenceIndex, imageUrl):
         def url_to_image(url):
             resp = requests.get(url)
@@ -90,14 +95,14 @@ def robotImages():
             return image
 
         def ajustSize(filename, output):
-            with ImageWand(filename= filename) as ima:
-                a, b = ima.size
+            with Image.open(filename) as im:
+                a,b = im.size
                 scale = 0.25
                 a = int(a * scale)
                 b = int(b * scale)
-                ima.resize(a, b)
-                # image.transform(resize='150')
-                ima.save(filename=output)
+                im.resize((a,b))
+                im.save(output)
+
         def ajustSizeToAllImages():
             for i in range(sentenceIndex):
                 filename = 'content/{}-original.png'.format(i)
@@ -143,6 +148,24 @@ def robotImages():
                 return True
         return False
 
+    def checkList(imageUrl, content, sentenceIndex, imageIndex):
+        blackList = loadBlackList()['blackList']
+        rejection = False
+        if imageUrl in (content['downloadedImages'] or blackList):
+            print("> {} {} Erro imagem ja existe: {}".format(sentenceIndex,imageIndex,imageUrl))
+            rejection = True
+        if not checkSupportImage(imageUrl):
+            print("> {} {} Erro nao foi possivel abrir a imagem: {}".format(sentenceIndex,imageIndex,imageUrl))
+            rejection = True
+        if sentenceIndex>0:
+            if checkDuplicatedImage(sentenceIndex-1, imageUrl):
+                print("> {} {} Erro imagem duplicada: {}".format(sentenceIndex,imageIndex,imageUrl))
+                rejection = True
+        if checkTypeImage(imageUrl):
+            print(f'>{sentenceIndex} {imageIndex} Erro tipo de imagem incompativel: {imageUrl}')
+            rejection = True
+        return rejection
+
     def downloadAllImages(content):
         print('> Downloading all images...')
         content['downloadedImages'] = []
@@ -151,23 +174,8 @@ def robotImages():
             for imageIndex in range(len(images)):
                 imageUrl = images[imageIndex]
                 blackList = loadBlackList()['blackList']
-                
-                if imageUrl in (content['downloadedImages'] or blackList):
-                    print("> {} {} Erro imagem ja existe: {}".format(sentenceIndex,imageIndex,imageUrl))
+                if checkList(imageUrl, content, sentenceIndex, imageIndex):
                     continue
-                elif imageUrl in blackList:
-                    print("> {} {} Erro imagem na Black List: {}".format(sentenceIndex,imageIndex,imageUrl))
-                    continue
-                elif not checkSupportImage(imageUrl):
-                    print("> {} {} Erro nao foi possivel abrir a imagem: {}".format(sentenceIndex,imageIndex,imageUrl))
-                    continue
-                elif sentenceIndex>0:
-                    if checkDuplicatedImage(sentenceIndex-1, imageUrl):
-                        print("> {} {} Erro imagem duplicada: {}".format(sentenceIndex,imageIndex,imageUrl))
-                        continue
-#                 elif(viewImage(imageUrl)):
-#                     print("> {} {} Erro imagem rejeitada: {}".format(sentenceIndex,imageIndex,imageUrl))
-#                     continue
                 try:
                     content['downloadedImages'].append(downloadAndSave(imageUrl,'{}-original.png'.format(sentenceIndex)))
                     print("> {} {} Baixou imagem com sucesso: {}".format(sentenceIndex,imageIndex,imageUrl))
@@ -182,3 +190,6 @@ def robotImages():
     content = loadContent()
     downloadAllImages(content)
     saveContent(content)
+
+if __name__ == "__main__":
+    pass
