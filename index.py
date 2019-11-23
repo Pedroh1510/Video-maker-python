@@ -13,7 +13,7 @@ def start():
     # robotVoice()
     robotImages()
     robotVideo()
-    # robotYoutube()
+    robotYoutube()
 
 if __name__ == "__main__":
     print('> Start!')
