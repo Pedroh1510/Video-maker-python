@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+algorithmia = ">=1.2.1"
+google-auth = "*"
+nltk = ">=3.4.5"
+pillow = ">=6.1.0"
+pylint = "*"
+watson-developer-cloud = ">=2.8.0"
+opencv-python = "==4.1.1.26"
+moviepy = "*"
+google-api-python-client = "*"
+google-auth-oauthlib = "*"
+
+[requires]
+python_version = "3.7"

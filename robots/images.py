@@ -63,16 +63,15 @@ def robotImages():
     
     def checkSupportImage(imageUrl):
         try:
-            Image.open(requests.get(imageUrl, stream=True).raw)
-            return True
+            with Image.open(requests.get(imageUrl, stream=True).raw):
+                return True
         except:
             return False
 
     def viewImage(imageUrl):
         try:
-            im = Image.open(requests.get(imageUrl, stream=True).raw)
-            im.show()
-            print()
+            with Image.open(requests.get(imageUrl, stream=True).raw) as im:
+                im.show()
             decition = str(input('Use this image?(y/n) '))
             if decition != 'y':
                 saveBlackList(imageUrl)

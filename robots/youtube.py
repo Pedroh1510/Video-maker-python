@@ -3,7 +3,6 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from robots.state import loadContent
-from hurry.filesize import size
 
 
 def robotYoutube():
@@ -12,8 +11,7 @@ def robotYoutube():
     def createOAuthClient():
         credentials  = './credential/youtubeC.json'
 
-        SCOPES = ['https://www.googleapis.com/auth/youtube',
-                  'https://www.googleapis.com/auth/yt-analytics.readonly']
+        SCOPES = ['https://www.googleapis.com/auth/youtube']
 
         OAuthClient = InstalledAppFlow.from_client_secrets_file(credentials, SCOPES)
         return OAuthClient
@@ -35,14 +33,11 @@ def robotYoutube():
         return youtube, youtubeAnalytics
     
     def uploadVideo(content):
-        # def filtro(value=[]):
-        #     return value['text']
-        videoFilePath = './content/output.mp4'
-        videoFileSize = size(getsize(videoFilePath))
+        videoFilePath = './content/final/project_audio.mp4'
+        videoFileSize = getsize(videoFilePath)/1024
         videoTitle = '{} {}'.format(content['prefix'],content['searchTerm'])
         videoTags = [content['searchTerm']]
         videoTags.extend(content['sentences'][0]['keywords'])
-        # videoDescription = '\n\n'.join(list(map(filtro,content['sentences'])))
         videoDescription = '\n\n'.join([content['sentences'][i]['text'] for i in range(len(content['sentences']))])
         idealizer = 'https://www.youtube.com/channel/UCU5JicSrEM5A63jkJ2QvGYw'
         credits = '''\n\nCredits:
@@ -55,6 +50,7 @@ def robotYoutube():
 -{}
 -{}
 -{}
+
 -Idealizer of the project: Filipe Deschamps
 -{}
 '''.format(content['wikipediaUrl'],
@@ -79,7 +75,7 @@ def robotYoutube():
                     'tags': videoTags
                 },
                 'status': {
-                    'privacyStatus': 'public'
+                    'privacyStatus': 'private'
                 }
             },
             'media': {
@@ -91,7 +87,7 @@ def robotYoutube():
             body= requestParameters['requestBody'],
             media_body= requestParameters['media']['body']
             )
-        print("> Uploading video file...",videoFileSize+"b")
+        print(f"> Uploading video file...{videoFileSize}kb")
         _, response = youtubeResponse.next_chunk()
         if 'id' in response:
             print('> Video available at: https://youtu.be/{}'.format(response['id']))
@@ -101,7 +97,7 @@ def robotYoutube():
             
     def uploadThumbnail(videoInformation):
         videoId = videoInformation
-        videoThumbnailFilePath = './content/youtube-thumbnail.jpg'
+        videoThumbnailFilePath = './content/youtube-thumbnail.png'
         
         requestParameters = {
             'videoId': videoId,
@@ -116,23 +112,6 @@ def robotYoutube():
             media_body= requestParameters['media']['body']
             ).execute()
         print("> Uploaded thumbnails")
-        
-    def analitics(youtube):
-        def execute_api_request(client_library_function, **kwargs):
-            response = client_library_function(
-              **kwargs
-            ).execute()
-            return response
-#             print(response)
-        return execute_api_request(
-            youtubeAnalytics.reports().query,
-            ids='channel==MINE',
-            startDate='2019-04-28',
-            endDate='2019-05-12',
-            metrics='estimatedMinutesWatched,views,likes,subscribersGained',
-            dimensions='day',
-            sort='day'
-            )
         
     def insertPlaylist(videoInformation):
         print("> Inserting into the playlist")
@@ -155,8 +134,6 @@ def robotYoutube():
     authorizationToken = requestUserConsent(OAuthClient)
     youtube, youtubeAnalytics = setGlobalGoogleAuthentication(authorizationToken)
     content = loadContent()
-#     content['analitics'] = analitics(youtube)
-#     saveContent(content)
     videoInformation = uploadVideo(content)
     uploadThumbnail(videoInformation)
-    insertPlaylist(videoInformation)
+    # insertPlaylist(videoInformation)

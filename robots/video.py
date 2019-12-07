@@ -186,22 +186,51 @@ def robotVideo():
         text_img = Image.blend(img,text_img,.2)
         text_img.save(outputFile,'PNG')
 
+    def createTransitionImage(imageIndex1, imageIndex2,imageIndexOutput,alph):
+        alph /=60
+        inputImage1 = f'./content/final/image{imageIndex1}.png'
+        inputImage2 = f'./content/final/image{imageIndex2}.png'
+        outputFile = f'./content/final/image{imageIndexOutput}.png'
+        with Image.open(inputImage1) as firstImage:
+            with Image.open(inputImage2) as secundImage:
+                text_img = Image.blend(firstImage,secundImage,alpha=alph)
+                text_img.save(outputFile,'PNG')
+
     def createAllImagesVideo():
         print('> Creating all images of video...')
-        for imageIndex in range(len(glob.glob('./content/*-converted.png'))):
-            for i in range(10):
-                a=f'0{imageIndex}{i}'
-                createImageVideo(imageIndex,a)
+        amountImages = len(glob.glob('./content/*-converted.png'))
+        count = 15
+        transitionPercert = count*0.25
+        for imageIndex in range(amountImages):
+            for i in range(count):
+                if i<(count-transitionPercert):
+                    a='{: 03d}-{: 04d}'.format(imageIndex,i)
+                    createImageVideo(imageIndex,a)
+        for imageIndex in range(amountImages):
+            index=0
+            for i in range(count):
+                if i>=(count-transitionPercert):
+                    image1='{: 03d}-{: 04d}'.format(imageIndex,0)
+                    if imageIndex+1 in range(amountImages):
+                        image2='{: 03d}-{: 04d}'.format(imageIndex+1,0)
+                        outputName = '{: 03d}-{: 04d}'.format(imageIndex,i)
+                        createTransitionImage(image1,image2,outputName,index)
+                        index+=1
         print('> Creating all images of video completed')
     
     def createVideo():
         imgArray=[]
-        for filename in glob.glob('./content/final/*.png'):
+        files = glob.glob('./content/final/*.png')
+        files.sort()
+        with open('novoArquivo','w') as a:
+            for i in files:
+                a.write(f'{i}\n')
+        for filename in files:
             img = cv2.imread(filename)
-            height, width, layers = img.shape
-            size = (width,height)
             imgArray.append(img)
-        out = cv2.VideoWriter('./content/final/project.mp4',cv2.VideoWriter_fourcc(*'MP4V'), 1, size)
+        height, width, _ = imgArray[0].shape
+        size = (width,height)
+        out = cv2.VideoWriter('./content/final/project.mp4',cv2.VideoWriter_fourcc(*'MP4V'), 24, size)
         for i in range(len(imgArray)):
             out.write(imgArray[i])
         out.release()

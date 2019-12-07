@@ -69,9 +69,6 @@ def robotText():
         response = service.analyze(
             text=sentence,
             features=Features(entities=EntitiesOptions(),keywords=KeywordsOptions())).get_result()
-        # def filtro(value=[]):
-        #     return value['text']
-        # return list(map(filtro,response['keywords']))
         return [response['keywords'][i]['text'] for i in range(len(response['keywords']))]
     
     def fetchKeywordsOfAllSentences(content):
