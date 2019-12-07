@@ -64,8 +64,6 @@ def robotVideo():
             return 2
 
     def adjustTextWratSentence(sentenceText,w,h):
-        sizeSentence = len(sentenceText)
-
         if w>=1080 and h == 1080:
             return 40
         if w<=900 and h==1080:
@@ -77,8 +75,7 @@ def robotVideo():
 
     def writeText(filename, text,w,h):
         img = np.zeros((h, w, 4),dtype=np.uint8)
-        height, width, channel = img.shape
-        text_img = np.zeros((height, width,4))
+        height, width, _ = img.shape
         font = cv2.FONT_HERSHEY_TRIPLEX
         wrapped_text = textwrap.wrap(text, width=adjustTextWratSentence(text,width,height))
         x, y = 10, 40
@@ -165,18 +162,18 @@ def robotVideo():
                 templateIndex = 0
             createSentenceImage(sentenceIndex, content['sentences'][sentenceIndex]['text'], templateIndex)
             templateIndex += 1
-        print('> Creating all sentences images completed')
+        print('> Creating all sentences images: Completed')
     
     def createYouTubeThumbnail():
         print('> Creating YouTube thumbnail')
         with Image.open('./content/0-converted.png') as img:
             img.save('content/youtube-thumbnail.png',"PNG")
-        print('> Created YouTube thumbnail')
+        print('> Creating YouTube thumbnail: Completed')
 
     def createImageVideo(imageIndex,imageIndexOutput):
         inputImage = f'./content/{imageIndex}-converted.png'
         inputImageSentence = f'./content/{imageIndex}-sentence.png'
-        outputFile = f'./content/final/image{imageIndexOutput}.png'
+        outputFile = f'./content/final/partVideos/image{imageIndexOutput}.png'
         originalImage = Image.open(inputImage,'r')
         originalImageSentence = Image.open(inputImageSentence,'r')
         text_img = Image.new('RGBA', (1920,1080), (0, 0, 0, 0))
@@ -186,11 +183,11 @@ def robotVideo():
         text_img = Image.blend(img,text_img,.2)
         text_img.save(outputFile,'PNG')
 
-    def createTransitionImage(imageIndex1, imageIndex2,imageIndexOutput,alph):
-        alph /=60
-        inputImage1 = f'./content/final/image{imageIndex1}.png'
-        inputImage2 = f'./content/final/image{imageIndex2}.png'
-        outputFile = f'./content/final/image{imageIndexOutput}.png'
+    def createTransitionImage(imageIndex1, imageIndex2,imageIndexOutput,alph,meta):
+        alph /=meta
+        inputImage1 = f'./content/final/partVideos/image{imageIndex1}.png'
+        inputImage2 = f'./content/final/partVideos/image{imageIndex2}.png'
+        outputFile = f'./content/final/transitionsVideos/transitionImage{imageIndexOutput}.png'
         with Image.open(inputImage1) as firstImage:
             with Image.open(inputImage2) as secundImage:
                 text_img = Image.blend(firstImage,secundImage,alpha=alph)
@@ -199,48 +196,69 @@ def robotVideo():
     def createAllImagesVideo():
         print('> Creating all images of video...')
         amountImages = len(glob.glob('./content/*-converted.png'))
-        count = 15
-        transitionPercert = count*0.25
+        transitionSeconds=1
+        beforeTransitionSeconds = 7
+        count = beforeTransitionSeconds
         for imageIndex in range(amountImages):
             for i in range(count):
-                if i<(count-transitionPercert):
-                    a='{: 03d}-{: 04d}'.format(imageIndex,i)
-                    createImageVideo(imageIndex,a)
+                a='{:03d}-{:04d}'.format(imageIndex,i)
+                createImageVideo(imageIndex,a)
+        count=24*transitionSeconds
         for imageIndex in range(amountImages):
             index=0
             for i in range(count):
-                if i>=(count-transitionPercert):
-                    image1='{: 03d}-{: 04d}'.format(imageIndex,0)
-                    if imageIndex+1 in range(amountImages):
-                        image2='{: 03d}-{: 04d}'.format(imageIndex+1,0)
-                        outputName = '{: 03d}-{: 04d}'.format(imageIndex,i)
-                        createTransitionImage(image1,image2,outputName,index)
-                        index+=1
-        print('> Creating all images of video completed')
+                image1='{:03d}-{:04d}'.format(imageIndex,0)
+                if imageIndex+1 in range(amountImages):
+                    image2='{:03d}-{:04d}'.format(imageIndex+1,0)
+                    outputName = '{:03d}-{:04d}'.format(imageIndex,i)
+                    createTransitionImage(image1,image2,outputName,index,count)
+                    index+=1
+        print('> Creating all images of video: Completed')
     
-    def createVideo():
+    def createVideo(dirPath,outputName,transition=False):
+        fps=1
+        if transition:
+            fps=24
         imgArray=[]
-        files = glob.glob('./content/final/*.png')
+        files = glob.glob(f'{dirPath}-*.png')
         files.sort()
-        with open('novoArquivo','w') as a:
-            for i in files:
-                a.write(f'{i}\n')
         for filename in files:
             img = cv2.imread(filename)
+            img = cv2.resize(img,(1280,720))
             imgArray.append(img)
         height, width, _ = imgArray[0].shape
         size = (width,height)
-        out = cv2.VideoWriter('./content/final/project.mp4',cv2.VideoWriter_fourcc(*'MP4V'), 24, size)
+        out = cv2.VideoWriter(f'{outputName}.mp4',cv2.VideoWriter_fourcc(*'MP4V'), fps, size)
         for i in range(len(imgArray)):
             out.write(imgArray[i])
         out.release()
 
-    def addAudioInVideo():
-        file = "./templates/3/bensound-epic.mp3"
-        video = mp.VideoFileClip("./content/final/project.mp4")
+    def createAllVideo(numberSentences):
+        print('> Creating all videos')
+        for indexSentence in range(numberSentences):
+            dirPath= './content/final/partVideos/image{:03d}'.format(indexSentence)
+            outputName= './content/final/partVideos/part{:03d}'.format(indexSentence)
+            createVideo(dirPath, outputName)
+        for indexSentence in range(numberSentences-1):
+            dirPath= './content/final/transitionsVideos/transitionImage{:03d}'.format(indexSentence)
+            outputName= './content/final/transitionsVideos/part{:03d}'.format(indexSentence)
+            createVideo(dirPath, outputName,transition=True)
+        print('> Creating all videos: Completed')
+
+    def margeVideosAndSetAudio(numberSentences):
+        print('> Joining all videos')
+        videos=[]
         audio = mp.AudioFileClip("./templates/3/bensound-epic.mp3")
+        for i in range(numberSentences):
+            videos.append(mp.VideoFileClip('./content/final/partVideos/part{:003d}.mp4'.format(i)))
+            if not i == (numberSentences-1):
+                videos.append(mp.VideoFileClip('./content/final/transitionsVideos/part{:003d}.mp4'.format(i)))
+        end=mp.VideoFileClip('./content/final/end.mp4',audio=False)
+        videos.append(end)
+        video = mp.concatenate_videoclips(videos,method='compose')
         video = video.set_audio(audio.set_duration(video.duration))
-        video.write_videofile("./content/final/project_audio.mp4")
+        video.write_videofile("./content/final/project.mp4")
+        print('> Joining all videos: Complete')
 
     content = loadContent()
     convertAllImages(content)
@@ -248,5 +266,5 @@ def robotVideo():
     createYouTubeThumbnail()
     saveContent(content)
     createAllImagesVideo()
-    createVideo()
-    addAudioInVideo()
+    createAllVideo(content['maximumSentences'])
+    margeVideosAndSetAudio(content['maximumSentences'])

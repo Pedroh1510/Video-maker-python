@@ -33,7 +33,7 @@ def robotYoutube():
         return youtube, youtubeAnalytics
     
     def uploadVideo(content):
-        videoFilePath = './content/final/project_audio.mp4'
+        videoFilePath = './content/final/project.mp4'
         videoFileSize = getsize(videoFilePath)/1024
         videoTitle = '{} {}'.format(content['prefix'],content['searchTerm'])
         videoTags = [content['searchTerm']]

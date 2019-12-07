@@ -125,8 +125,9 @@ draw-word-wrap.png
 *sentence.png
 content/final/*.mp4
 content/final/*.png
-content/ajust
 content/Thumbnail's
+content/ajust/*.jpg
+*.png
 
 # BlackList
 blackList.json
@@ -139,3 +140,4 @@ out.wmv
 output.ppm
 /.vscode
 requirements.txt
+projectTEMP_MPY_wvf_snd.mp3
