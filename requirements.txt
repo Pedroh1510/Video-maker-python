@@ -7,6 +7,6 @@ hurry.filesize==0.9
 numpy==1.16.4
 requests==2.21.0
 Algorithmia==1.2.1
-Pillow==6.2.0
+Pillow==8.3.2
 google_api_python_client==1.7.11
 hurry==1.1
