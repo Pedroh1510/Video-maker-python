@@ -8,42 +8,48 @@ from hurry.filesize import size
 
 def robotYoutube():
     youtube = None
-        
-    def createOAuthClient():
-        credentials  = './credential/youtubeC.json'
 
-        SCOPES = ['https://www.googleapis.com/auth/youtube',
+    def createOAuthClient():
+        credentials = './credential/youtube.json'
+
+        SCOPES = ['https://www.googleapis.com/auth/youtube', 'https://www.googleapis.com/auth/youtube.upload',
                   'https://www.googleapis.com/auth/yt-analytics.readonly']
 
-        OAuthClient = InstalledAppFlow.from_client_secrets_file(credentials, SCOPES)
+        OAuthClient = InstalledAppFlow.from_client_secrets_file(
+            credentials, SCOPES)
         return OAuthClient
-    
+
     def requestUserConsent(OAuthClient):
-        credentials = OAuthClient.run_local_server(port= 5000,
-                                                   success_message='''
-                                                   Thank you!
-                                                   Now close this tab.
-                                                   ''',
-                                                   access_type='offline',
-                                                   include_granted_scopes='true'
-                                                   )
+        credentials = OAuthClient.run_local_server(
+            port=5000,
+            host='localhost',
+            success_message='''
+            Thank you!
+            Now close this tab.
+            ''',
+            access_type='offline',
+            include_granted_scopes='true',
+        )
         return credentials
-    
+
     def setGlobalGoogleAuthentication(authorizationToken):
-        youtube = build('youtube','v3',credentials=authorizationToken)
-        youtubeAnalytics = build('youtubeAnalytics','v2',credentials=authorizationToken)
+        youtube = build('youtube', 'v3', credentials=authorizationToken)
+        youtubeAnalytics = build(
+            'youtubeAnalytics', 'v2', credentials=authorizationToken)
         return youtube, youtubeAnalytics
-    
+
     def uploadVideo(content):
         # def filtro(value=[]):
         #     return value['text']
-        videoFilePath = './content/output.mp4'
+        videoFilePath = './content/final/project_audio.mp4'
+        # videoFilePath = './content/output.mp4'
         videoFileSize = size(getsize(videoFilePath))
-        videoTitle = '{} {}'.format(content['prefix'],content['searchTerm'])
+        videoTitle = '{} {}'.format(content['prefix'], content['searchTerm'])
         videoTags = [content['searchTerm']]
         videoTags.extend(content['sentences'][0]['keywords'])
         # videoDescription = '\n\n'.join(list(map(filtro,content['sentences'])))
-        videoDescription = '\n\n'.join([content['sentences'][i]['text'] for i in range(len(content['sentences']))])
+        videoDescription = '\n\n'.join(
+            [content['sentences'][i]['text'] for i in range(len(content['sentences']))])
         idealizer = 'https://www.youtube.com/channel/UCU5JicSrEM5A63jkJ2QvGYw'
         credits = '''\n\nCredits:
 -Wikipedia: {}
@@ -69,7 +75,7 @@ def robotYoutube():
         videoDescription += credits
         if content['template'] > 1:
             videoDescription += '\n-Music: https://www.bensound.com/royalty-free-music'
-        
+
         requestParameters = {
             'part': 'snippet, status',
             'requestBody': {
@@ -87,40 +93,41 @@ def robotYoutube():
             }
         }
         youtubeResponse = youtube.videos().insert(
-            part= requestParameters['part'],
-            body= requestParameters['requestBody'],
-            media_body= requestParameters['media']['body']
-            )
-        print("> Uploading video file...",videoFileSize+"b")
+            part=requestParameters['part'],
+            body=requestParameters['requestBody'],
+            media_body=requestParameters['media']['body']
+        )
+        print("> Uploading video file...", videoFileSize+"b")
         _, response = youtubeResponse.next_chunk()
         if 'id' in response:
-            print('> Video available at: https://youtu.be/{}'.format(response['id']))
+            print(
+                '> Video available at: https://youtu.be/{}'.format(response['id']))
             return response['id']
         else:
             exit("The upload failed with an unexpected response: %s" % response)
-            
+
     def uploadThumbnail(videoInformation):
         videoId = videoInformation
         videoThumbnailFilePath = './content/youtube-thumbnail.jpg'
-        
+
         requestParameters = {
             'videoId': videoId,
             'media': {
                 'mimeType': 'image/jpeg',
                 'body': MediaFileUpload(videoThumbnailFilePath, chunksize=-1, resumable=True)
-                }
             }
+        }
         print("> Uploading thumbnails file...")
         youtube.thumbnails().set(
-            videoId= requestParameters['videoId'],
-            media_body= requestParameters['media']['body']
-            ).execute()
+            videoId=requestParameters['videoId'],
+            media_body=requestParameters['media']['body']
+        ).execute()
         print("> Uploaded thumbnails")
-        
+
     def analitics(youtube):
         def execute_api_request(client_library_function, **kwargs):
             response = client_library_function(
-              **kwargs
+                **kwargs
             ).execute()
             return response
 #             print(response)
@@ -132,12 +139,12 @@ def robotYoutube():
             metrics='estimatedMinutesWatched,views,likes,subscribersGained',
             dimensions='day',
             sort='day'
-            )
-        
+        )
+
     def insertPlaylist(videoInformation):
         print("> Inserting into the playlist")
         videoID = videoInformation
-        playlistID= 'PL771Qy0TVPUh9Vdnk7ezLpED0F3aAiz7Z'
+        playlistID = 'PL771Qy0TVPUh9Vdnk7ezLpED0F3aAiz7Z'
         youtube.playlistItems().insert(
             part="snippet",
             body={
@@ -146,17 +153,25 @@ def robotYoutube():
                     'resourceId': {
                         'kind': 'youtube#video',
                         'videoId': videoID
-                        }
                     }
-                }).execute()
+                }
+            }).execute()
         print("> Inserted into the playlist")
 
     OAuthClient = createOAuthClient()
     authorizationToken = requestUserConsent(OAuthClient)
-    youtube, youtubeAnalytics = setGlobalGoogleAuthentication(authorizationToken)
+    youtube, youtubeAnalytics = setGlobalGoogleAuthentication(
+        authorizationToken)
     content = loadContent()
 #     content['analitics'] = analitics(youtube)
 #     saveContent(content)
     videoInformation = uploadVideo(content)
     uploadThumbnail(videoInformation)
-    insertPlaylist(videoInformation)
+    # insertPlaylist(videoInformation)
+
+
+# if __name__ == "__main__":
+#     print('> Start!')
+#     robotYoutube()
+#     # print(json.dumps(loadContent()['sentences'], indent= 2))
+#     print('> Terminated')

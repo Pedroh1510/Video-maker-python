@@ -1,19 +1,21 @@
 from robots.userInput import user
 from robots.text import robotText
-# from robots.voice import robotVoice
+# # from robots.voice import robotVoice
 from robots.images import robotImages
 from robots.video import robotVideo
 from robots.youtube import robotYoutube
 from robots.state import loadContent
 import json
 
+
 def start():
-    user()
-    robotText()
+    # user()
+    # robotText()
+    # robotImages()
+    # robotVideo()
+    robotYoutube()
     # robotVoice()
-    robotImages()
-    robotVideo()
-    # robotYoutube()
+
 
 if __name__ == "__main__":
     print('> Start!')

@@ -1,35 +1,39 @@
+import json
 from googleapiclient.discovery import build
-from robots.state import saveContent, loadContent, loadBlackList, saveBlackList
-from credential.googleSearch import googleSearchCredentials
+from robots.state import saveContent, loadContent, loadBlackList, saveBlackList, loadApikey
+# from credential.googleSearch import googleSearchCredentials
 # from wand.image import Image as ImageWand
 from PIL import Image
 import requests
 import cv2
 import numpy as np
+googleSearchCredentials = loadApikey(
+    './credential/google-search.json')
 
 
 def robotImages():
-
-    def ajustFetchGoogle(service,query,sentenceIndex):
+    def ajustFetchGoogle(service, query, sentenceIndex):
         if sentenceIndex > 0:
             response = service.cse().list(
                 cx=googleSearchCredentials['searchEngineId'],
                 q=query,
                 searchType='image',
                 num=10,
-                filter = '1').execute()
+                filter='1').execute()
         else:
             response = service.cse().list(
                 cx=googleSearchCredentials['searchEngineId'],
                 q=query,
                 searchType='image',
                 num=10,
-                filter = '1',
-                imgSize = 'xxlarge').execute()    
+                filter='1',
+                # imgSize='LARGE'
+            ).execute()
         return response
 
     def fetchGoogleAndReturnImagesLinks(query, sentenceIndex):
-        service = build("customsearch", "v1", developerKey=googleSearchCredentials['apiKey'])
+        service = build("customsearch", "v1",
+                        developerKey=googleSearchCredentials['apiKey'])
         response = ajustFetchGoogle(service, query, sentenceIndex)
         # def filtro(value=[]):
         #         return value['link']
@@ -38,31 +42,42 @@ def robotImages():
         else:
             return [response['items'][i]['link'] for i in range(len(response['items']))]
             # return list(map(filtro,response['items']))
-        
+
     def ajustFetchImages(content, sentence):
         if content['searchTerm'].lower() in sentence.lower():
             return content['searchTerm']
         else:
             query = '{} {}'.format(content['searchTerm'], sentence)
             return query
-    
+
+    def interatorInAllKeyword(content, sentence, sentenceIndex):
+        for keywordIndex, keyword in enumerate(sentence['keywords']):
+            query = ajustFetchImages(
+                content, sentence['keywords'][keywordIndex])
+            sentence['images'] = fetchGoogleAndReturnImagesLinks(
+                query, sentenceIndex)
+            if(sentence['images'] != None):
+                sentence['googleSeachQuery'] = query
+                break
+
     def fetchImagesOfAllSentences(content):
         print('> Fetching images of all sentences...')
         for sentenceIndex, sentence in enumerate(content['sentences']):
-            query = ajustFetchImages(content, sentence['keywords'][0])
-            sentence['images'] = fetchGoogleAndReturnImagesLinks(query, sentenceIndex)
-            sentence['googleSeachQuery'] = query
+            interatorInAllKeyword(content, sentence, sentenceIndex)
         print('> Fetch images of all sentences concluded')
-    
+
     def downloadAndSave(url, fileName):
         fileName = 'content/'+fileName
-        f  = open(fileName,'wb')
+        f = open(fileName, 'wb')
         f.write(requests.get(url).content)
         f.close()
         return url
-    
+
     def checkSupportImage(imageUrl):
         try:
+            response = requests.get(imageUrl, stream=True)
+            if(response.status_code == 400):
+                return False
             Image.open(requests.get(imageUrl, stream=True).raw)
             return True
         except:
@@ -72,7 +87,6 @@ def robotImages():
         try:
             im = Image.open(requests.get(imageUrl, stream=True).raw)
             im.show()
-            print()
             decition = str(input('Use this image?(y/n) '))
             if decition != 'y':
                 saveBlackList(imageUrl)
@@ -96,11 +110,11 @@ def robotImages():
 
         def ajustSize(filename, output):
             with Image.open(filename) as im:
-                a,b = im.size
+                a, b = im.size
                 scale = 0.25
                 a = int(a * scale)
                 b = int(b * scale)
-                im.resize((a,b))
+                im.resize((a, b))
                 im.save(output)
 
         def ajustSizeToAllImages():
@@ -150,21 +164,25 @@ def robotImages():
 
     def checkList(imageUrl, content, sentenceIndex, imageIndex):
         blackList = loadBlackList()['blackList']
-        rejection = False
         if imageUrl in (content['downloadedImages'] or blackList):
-            print("> {} {} Erro imagem ja existe: {}".format(sentenceIndex,imageIndex,imageUrl))
-            rejection = True
-        if not checkSupportImage(imageUrl):
-            print("> {} {} Erro nao foi possivel abrir a imagem: {}".format(sentenceIndex,imageIndex,imageUrl))
-            rejection = True
-        if sentenceIndex>0:
+            print("> {} {} Erro imagem ja existe: {}".format(
+                sentenceIndex, imageIndex, imageUrl))
+            return True
+        elif not checkSupportImage(imageUrl):
+            print("> {} {} Erro nao foi possivel abrir a imagem: {}".format(
+                sentenceIndex, imageIndex, imageUrl))
+            # saveBlackList(imageUrl)
+            return True
+        elif sentenceIndex > 0:
             if checkDuplicatedImage(sentenceIndex-1, imageUrl):
-                print("> {} {} Erro imagem duplicada: {}".format(sentenceIndex,imageIndex,imageUrl))
-                rejection = True
-        if checkTypeImage(imageUrl):
-            print(f'>{sentenceIndex} {imageIndex} Erro tipo de imagem incompativel: {imageUrl}')
-            rejection = True
-        return rejection
+                print("> {} {} Erro imagem duplicada: {}".format(
+                    sentenceIndex, imageIndex, imageUrl))
+                return True
+        elif checkTypeImage(imageUrl):
+            print(
+                f'>{sentenceIndex} {imageIndex} Erro tipo de imagem incompativel: {imageUrl}')
+            return True
+        return False
 
     def downloadAllImages(content):
         print('> Downloading all images...')
@@ -177,11 +195,14 @@ def robotImages():
                 if checkList(imageUrl, content, sentenceIndex, imageIndex):
                     continue
                 try:
-                    content['downloadedImages'].append(downloadAndSave(imageUrl,'{}-original.png'.format(sentenceIndex)))
-                    print("> {} {} Baixou imagem com sucesso: {}".format(sentenceIndex,imageIndex,imageUrl))
+                    content['downloadedImages'].append(downloadAndSave(
+                        imageUrl, '{}-original.png'.format(sentenceIndex)))
+                    print("> {} {} Baixou imagem com sucesso: {}".format(
+                        sentenceIndex, imageIndex, imageUrl))
                     break
                 except:
-                    print("> {} {} Erro ao baixar: {}".format(sentenceIndex,imageIndex,imageUrl))
+                    print("> {} {} Erro ao baixar: {}".format(
+                        sentenceIndex, imageIndex, imageUrl))
         print('> Downloaded all images...')
 
     content = loadContent()
@@ -190,6 +211,7 @@ def robotImages():
     content = loadContent()
     downloadAllImages(content)
     saveContent(content)
+
 
 if __name__ == "__main__":
     pass

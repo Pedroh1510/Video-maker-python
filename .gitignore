@@ -106,8 +106,9 @@ venv.bak/
 .idea
 
 # Credential
-credential/*py
+# credential/*py
 credential/*json
+!credential/*example.json
 
 # Robots
 
@@ -125,7 +126,7 @@ draw-word-wrap.png
 *sentence.png
 content/final/*.mp4
 content/final/*.png
-content/ajust
+content/ajust/*.png
 content/Thumbnail's
 
 # BlackList
