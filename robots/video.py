@@ -201,9 +201,10 @@ def robotVideo():
             for i in range(10):
                 a = f'0{imageIndex}{i}'
                 createImageVideo(imageIndex, a)
-        print('> Creating all images of video completed')
+        print('> Create all images of video completed')
 
     def createVideo():
+        print('> Creating video...')
         imgArray = []
         for filename in glob.glob('./content/final/*.png'):
             img = cv2.imread(filename)
@@ -216,13 +217,16 @@ def robotVideo():
         for i in range(len(imgArray)):
             out.write(imgArray[i])
         out.release()
+        print('> Created video')
 
     def addAudioInVideo():
+        print('> adding audio in video...')
         file = "./templates/3/bensound-epic.mp3"
         video = mp.VideoFileClip("./content/final/project.mp4")
         audio = mp.AudioFileClip("./templates/3/bensound-epic.mp3")
         video = video.set_audio(audio.set_duration(video.duration))
         video.write_videofile("./content/final/project_audio.mp4")
+        print('> added audio in video...')
 
     content = loadContent()
     convertAllImages(content)

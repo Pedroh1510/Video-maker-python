@@ -2,8 +2,13 @@ from os.path import getsize
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
-from robots.state import loadContent
+try:
+    from robots.state import loadContent
+except:
+    from state import loadContent
+
 from hurry.filesize import size
+import os
 
 
 def robotYoutube():
@@ -20,16 +25,22 @@ def robotYoutube():
         return OAuthClient
 
     def requestUserConsent(OAuthClient):
-        credentials = OAuthClient.run_local_server(
-            port=5000,
-            host='localhost',
-            success_message='''
-            Thank you!
-            Now close this tab.
-            ''',
+        credentials = OAuthClient.run_console(
             access_type='offline',
             include_granted_scopes='true',
+            open_browser=False
         )
+        # credentials = OAuthClient.run_local_server(
+        #     port=5000,
+        #     host='localhost',
+        #     success_message='''
+        #     Thank you!
+        #     Now close this tab.
+        #     ''',
+        #     access_type='offline',
+        #     include_granted_scopes='true',
+        #     open_browser=False
+        # )
         return credentials
 
     def setGlobalGoogleAuthentication(authorizationToken):
@@ -108,21 +119,26 @@ def robotYoutube():
 
     def uploadThumbnail(videoInformation):
         videoId = videoInformation
-        videoThumbnailFilePath = './content/youtube-thumbnail.jpg'
+        videoThumbnailFile = 'youtube-thumbnail.png'
 
-        requestParameters = {
-            'videoId': videoId,
-            'media': {
-                'mimeType': 'image/jpeg',
-                'body': MediaFileUpload(videoThumbnailFilePath, chunksize=-1, resumable=True)
+        dirname = os.path.dirname(__file__).replace('robots', '')
+        filePath = os.path.join(dirname, 'content', videoThumbnailFile)
+        if(os.path.exists(filePath)):
+            requestParameters = {
+                'videoId': videoId,
+                'media': {
+                    'mimeType': 'image/jpeg',
+                    'body': MediaFileUpload(filePath, chunksize=-1, resumable=True)
+                }
             }
-        }
-        print("> Uploading thumbnails file...")
-        youtube.thumbnails().set(
-            videoId=requestParameters['videoId'],
-            media_body=requestParameters['media']['body']
-        ).execute()
-        print("> Uploaded thumbnails")
+            print("> Uploading thumbnails file...")
+            youtube.thumbnails().set(
+                videoId=requestParameters['videoId'],
+                media_body=requestParameters['media']['body']
+            ).execute()
+            print("> Uploaded thumbnails")
+        else:
+            raise Exception("Arquivo não encontrado, thumbnail")
 
     def analitics(youtube):
         def execute_api_request(client_library_function, **kwargs):
@@ -130,7 +146,6 @@ def robotYoutube():
                 **kwargs
             ).execute()
             return response
-#             print(response)
         return execute_api_request(
             youtubeAnalytics.reports().query,
             ids='channel==MINE',
@@ -170,8 +185,7 @@ def robotYoutube():
     # insertPlaylist(videoInformation)
 
 
-# if __name__ == "__main__":
-#     print('> Start!')
-#     robotYoutube()
-#     # print(json.dumps(loadContent()['sentences'], indent= 2))
-#     print('> Terminated')
+if __name__ == "__main__":
+    print('> Start!')
+    robotYoutube()
+    print('> Terminated')

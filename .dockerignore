@@ -1,0 +1,5 @@
+env/
+*.png
+*.json
+*.mp4
+__pycache__
