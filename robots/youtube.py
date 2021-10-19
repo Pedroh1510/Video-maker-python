@@ -3,7 +3,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 try:
-    from robots.state import loadContent
+    from robots.state import loadContent, saveContent
 except:
     from state import loadContent
 
@@ -180,9 +180,10 @@ def robotYoutube():
     content = loadContent()
 #     content['analitics'] = analitics(youtube)
 #     saveContent(content)
-    videoInformation = uploadVideo(content)
-    uploadThumbnail(videoInformation)
+    content['videoId'] = uploadVideo(content)
+    uploadThumbnail(content['videoId'])
     # insertPlaylist(videoInformation)
+    saveContent(content)
 
 
 if __name__ == "__main__":

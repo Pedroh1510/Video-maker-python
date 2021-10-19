@@ -6,13 +6,12 @@ blackListFilePath = './content/blackList/blackList.json'
 
 def saveContent(content):
     with open(contentFilePath, 'w', encoding='utf-8') as save:
-        json.dump(content, save)
+        json.dump(content, save, ensure_ascii=False)
 
 
 def loadContent():
     with open(contentFilePath, 'r', encoding='utf-8') as contentJson:
-        content = json.load(contentJson)
-        return content
+        return json.load(contentJson)
 
 
 def saveScript(content):

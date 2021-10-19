@@ -11,16 +11,18 @@ import json
 
 def start():
     # user()
-    userEnv()
-    robotText()
-    robotImages()
+    # userEnv()
+    # robotText()
+    # print(loadContent())
+    # robotImages()
     robotVideo()
-    robotYoutube()
+    # robotYoutube()
     # robotVoice()
 
 
 if __name__ == "__main__":
     print('> Start!')
     start()
-    # print(json.dumps(loadContent()['sentences'], indent= 2))
+    # print(json.dumps(loadContent()['sentences'], indent=2))
+    # print(json.dumps(loadContent()['sentences']))
     print('> Terminated')

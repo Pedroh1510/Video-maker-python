@@ -20,7 +20,7 @@ python3 index.js
 # Build da imagem
 docker build -t video-maker-python .
 # rodando o conteiner
-docker run -it --rm -v ${pwd}/content:/content  -e language='' -e searchTerm='' -e prefix='' -e template='' video-maker-python
+docker run -it --rm -v ${pwd}/content:/content  -e language='' -e searchTerm='' -e prefix='' -e template=1 video-maker-python
 ```
 
 - language: escolha do idioma, aceito, en, pt e pt-br

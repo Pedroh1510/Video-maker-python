@@ -3,6 +3,7 @@ from watson_developer_cloud import NaturalLanguageUnderstandingV1
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
 from robots.state import saveContent, loadContent, loadApikey
 from utils.functions import apiWikipedia, apiAlgorithmia
+from unicodedata import normalize
 # from credential.algorithmiaC import ApiKey as algorithmiaApiKey
 # from credential.watsonC import ApiKeyNLU as watsonApiKey
 
@@ -39,7 +40,8 @@ def robotText():
             return allLines
 
         withoutBlankLines = removeBlankLinesAndMarkdown(sorceContentOriginal)
-        return withoutBlankLines
+        textNormalizede = normalize('NFKD', withoutBlankLines)
+        return textNormalizede
 
     def breakContentSentences(text):
         conteudo = []
@@ -78,10 +80,10 @@ def robotText():
         return content
 
     content = loadContent()
-    content['sorceContentOriginal'], content['wikipediaUrl'] = fetchContentFromWikipedia(
+    content['sourceContentOriginal'], content['wikipediaUrl'] = fetchContentFromWikipedia(
         content)
     content['sourceContentSanitize'] = sanitizeContent(
-        content['sorceContentOriginal'])
+        content['sourceContentOriginal'])
     content['sentences'] = breakContentSentences(
         content['sourceContentSanitize'])
     content = limitMaximumSentences(content)
