@@ -36,10 +36,13 @@ def user():
     language = askAndReturnLanguage()
 
     content = {
+        # 'language': 'en',
         'language': language,
         'searchTerm': askAndReturnSearchTerm(),
+        # 'prefix': 'What is ',
         'prefix': askAndReturnPrefix(language),
         'maximumSentences': 7,
-        'template': askAndReturnTemplate()
+        'template': 1
+        # 'template': askAndReturnTemplate()
     }
     saveContent(content)

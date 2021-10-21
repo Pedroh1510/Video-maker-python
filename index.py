@@ -1,3 +1,4 @@
+import os
 from robots.userInput import user
 from robots.text import robotText
 # # from robots.voice import robotVoice
@@ -10,13 +11,14 @@ import json
 
 
 def start():
-    # user()
-    # userEnv()
-    # robotText()
-    # print(loadContent())
-    # robotImages()
+    try:
+        userEnv()
+    except:
+        user()
+    robotText()
+    robotImages()
     robotVideo()
-    # robotYoutube()
+    robotYoutube()
     # robotVoice()
 
 

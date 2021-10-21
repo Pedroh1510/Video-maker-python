@@ -1,4 +1,5 @@
 import json
+import os
 from googleapiclient.discovery import build
 from robots.state import saveContent, loadContent, loadBlackList, saveBlackList, loadApikey
 # from credential.googleSearch import googleSearchCredentials
@@ -7,6 +8,7 @@ from PIL import Image
 import requests
 import cv2
 import numpy as np
+import glob
 googleSearchCredentials = loadApikey(
     './credential/google-search.json')
 
@@ -102,6 +104,7 @@ def robotImages():
         return False
 
     def checkDuplicatedImage(sentenceIndex, imageUrl):
+
         def url_to_image(url):
             resp = requests.get(url)
             image = np.asarray(bytearray(resp.content), dtype="uint8")
@@ -135,31 +138,36 @@ def robotImages():
         downloadImageAndAjust(imageUrl)
         image_to_compare = cv2.imread('content/ajust/internet.png')
 
-        for i in range(sentenceIndex):
-            ajustSizeToAllImages()
-            filename = 'content/ajust/{}-original.png'.format(i)
-            original = cv2.imread(filename)
-            if original.shape == image_to_compare.shape:
-                difference = cv2.subtract(original, image_to_compare)
-                b, g, r = cv2.split(difference)
-                if cv2.countNonZero(b) == 0 and cv2.countNonZero(g) == 0 and cv2.countNonZero(r) == 0:
+        # for i in range(sentenceIndex):
+        for fileName in glob.glob(os.path.join('content', 'ajust', '*.png')):
+            if('internet' in fileName):
+                pass
+            else:
+                ajustSizeToAllImages()
+                # filename = 'content/ajust/{}-original.png'.format(i)
+                original = cv2.imread(fileName)
+                if original.shape == image_to_compare.shape:
+                    difference = cv2.subtract(original, image_to_compare)
+                    b, g, r = cv2.split(difference)
+                    if cv2.countNonZero(b) == 0 and cv2.countNonZero(g) == 0 and cv2.countNonZero(r) == 0:
+                        return True
+                detector = cv2.BRISK_create()
+                kp_1, desc_1 = detector.detectAndCompute(original, None)
+                kp_2, desc_2 = detector.detectAndCompute(
+                    image_to_compare, None)
+                desc_1 = desc_1.astype('float32')
+                desc_2 = desc_2.astype('float32')
+                index_params = dict(algorithm=0, trees=5)
+                search_params = dict()
+                flann = cv2.FlannBasedMatcher(index_params, search_params)
+                matches = flann.knnMatch(desc_1, desc_2, k=2)
+                good_points = []
+                ratio = 0.6
+                for m, n in matches:
+                    if m.distance < ratio * n.distance:
+                        good_points.append(m)
+                if len(good_points) > 40:
                     return True
-            detector = cv2.BRISK_create()
-            kp_1, desc_1 = detector.detectAndCompute(original, None)
-            kp_2, desc_2 = detector.detectAndCompute(image_to_compare, None)
-            desc_1 = desc_1.astype('float32')
-            desc_2 = desc_2.astype('float32')
-            index_params = dict(algorithm=0, trees=5)
-            search_params = dict()
-            flann = cv2.FlannBasedMatcher(index_params, search_params)
-            matches = flann.knnMatch(desc_1, desc_2, k=2)
-            good_points = []
-            ratio = 0.6
-            for m, n in matches:
-                if m.distance < ratio * n.distance:
-                    good_points.append(m)
-            if len(good_points) > 40:
-                return True
         return False
 
     def checkList(imageUrl, content, sentenceIndex, imageIndex):

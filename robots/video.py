@@ -1,7 +1,7 @@
 import sys
 from subprocess import Popen, PIPE, CalledProcessError
 from robots.state import loadContent, saveContent, saveScript
-from PIL import Image, ImageFilter, ImageDraw
+from PIL import Image, ImageFilter, ImageDraw, ImageFont
 import cv2
 import numpy as np
 import textwrap
@@ -65,7 +65,7 @@ def robotVideo():
         if sizeSentence >= 150 and sizeSentence <= 250:
             return 1.8
         if sizeSentence >= 250:
-            return 1.3
+            return 1
         else:
             return 2
 
@@ -93,18 +93,24 @@ def robotVideo():
         font_thickness = 2
 
         i = 0
+        img_pil = Image.fromarray(img)
+        draw = ImageDraw.Draw(img_pil)
         for line in wrapped_text:
             textsize = cv2.getTextSize(
                 line, font, font_size, font_thickness)[0]
 
-            gap = textsize[1] + 25
+            gap = textsize[1] + 40
             y = int((img.shape[0] + textsize[1]) / 10) + i * gap
-            x = int((img.shape[1] - textsize[0]) / 5)
-            cv2.putText(img, line, (x, y), font,
-                        font_size,
-                        (255, 255, 255, 250),
-                        font_thickness,
-                        lineType=cv2.LINE_AA)
+            x = int((img.shape[1] - textsize[0]) / 5)-10
+            # cv2.putText(img, line, (x, y), font,
+            #             font_size,
+            #             (255, 255, 255, 250),
+            #             font_thickness,
+            #             lineType=cv2.LINE_AA)
+            font1 = ImageFont.truetype(
+                './fonts/simsun.ttc', 90)
+            draw.text((x, y),  line, font=font1, fill=(255, 255, 255, 250))
+            img = np.array(img_pil)
             i += 1
         cv2.imwrite(filename, img)
 
@@ -161,8 +167,8 @@ def robotVideo():
                 'g': 5
             }
         }
-        w = templateSettings[templateIndex]['width']
-        h = templateSettings[templateIndex]['height']
+        w = templateSettings[4]['width']
+        h = templateSettings[4]['height']
         writeText(outputFile, sentenceText, w, h)
 
     def createAllSentenceImages(content):
