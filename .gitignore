@@ -139,3 +139,4 @@ blackList.json
 out.wmv
 output.ppm
 /.vscode
+*.png

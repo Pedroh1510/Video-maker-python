@@ -7,6 +7,7 @@ import numpy as np
 import textwrap
 import glob
 import moviepy.editor as mp
+from io import BytesIO
 
 rootPath = sys.path[0]
 
@@ -107,8 +108,13 @@ def robotVideo():
             #             (255, 255, 255, 250),
             #             font_thickness,
             #             lineType=cv2.LINE_AA)
-            font1 = ImageFont.truetype(
-                './fonts/simsun.ttc', 90)
+            # font1 = ImageFont.truetype(
+            #     # './robots/fonts/simsun.ttc', 90)
+            #     'robots/fonts/simsun.ttc', 90)
+            # font1 = ImageFont.load_default()
+            file = open("robots/fonts/verdana/verdanab.ttf", "rb")
+            bytes_font = BytesIO(file.read())
+            font1 = ImageFont.truetype(bytes_font, 80)
             draw.text((x, y),  line, font=font1, fill=(255, 255, 255, 250))
             img = np.array(img_pil)
             i += 1

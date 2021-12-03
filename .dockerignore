@@ -1,5 +1,5 @@
-env/
-*.png
-*.json
-*.mp4
+# env/
+# *.png
+# *.json
+# *.mp4
 __pycache__
