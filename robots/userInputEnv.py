@@ -1,6 +1,8 @@
 from robots.state import saveContent
 import os
 
+from utils.db import getVideo
+from utils.functions import getEnv
 
 def userEnv():
     def language():
@@ -11,17 +13,25 @@ def userEnv():
             raise Exception("Language not accept")
         return language[choose]
 
-    def getEnv(name=''):
-        choose = os.environ[name]
-        if(len(choose) == 0):
-            raise Exception(f"{name} is empty")
-        return choose
-
-    content = {
-        'language': language(),
-        'searchTerm': getEnv('searchTerm'),
-        'prefix': getEnv('prefix'),
-        'maximumSentences': 7,
-        'template': getEnv('template')
-    }
+    if(getEnv('db')==None):
+        content = {
+            'language': language(),
+            'searchTerm': getEnv('searchTerm'),
+            'prefix': getEnv('prefix'),
+            'maximumSentences': 7,
+            'template': getEnv('template')
+        }
+    else:
+        video = getVideo()
+        if(video == None):
+            return None
+        content = {
+            'language': 'pt',
+            'searchTerm': video['sugestao'],
+            'idSearchTerm': video['id'],
+            'prefix': "",
+            'maximumSentences': 7,
+            'template': 1
+        }
     saveContent(content)
+    return content

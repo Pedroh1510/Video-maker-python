@@ -114,7 +114,8 @@ def robotVideo():
             # font1 = ImageFont.load_default()
             file = open("robots/fonts/verdana/verdanab.ttf", "rb")
             bytes_font = BytesIO(file.read())
-            font1 = ImageFont.truetype(bytes_font, 80)
+            # font1 = ImageFont.truetype(bytes_font, 80)
+            font1 = ImageFont.truetype(font="robots/fonts/verdana/verdanab.ttf", size=40)
             draw.text((x, y),  line, font=font1, fill=(255, 255, 255, 250))
             img = np.array(img_pil)
             i += 1
@@ -241,9 +242,9 @@ def robotVideo():
         print('> added audio in video...')
 
     content = loadContent()
-    convertAllImages(content)
+    # convertAllImages(content)
     createAllSentenceImages(content)
-    createYouTubeThumbnail()
+    # createYouTubeThumbnail()
     saveContent(content)
     createAllImagesVideo()
     createVideo()

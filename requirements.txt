@@ -11,3 +11,4 @@ Algorithmia==1.13.1
 google_api_python_client==2.26.1
 hurry==1.1
 Pillow==8.4.0
+mysql-connector-python==8.0.28

@@ -181,8 +181,10 @@ def robotYoutube():
 #     content['analitics'] = analitics(youtube)
 #     saveContent(content)
     content['videoId'] = uploadVideo(content)
-    uploadThumbnail(content['videoId'])
+    # uploadThumbnail(content['videoId'])
     # insertPlaylist(videoInformation)
+    content["urlVideo"] = 'https://www.youtube.com/watch?v={}'.format(content['videoId'])
+    content["titleVideo"] = '{} {}'.format(content['prefix'], content['searchTerm'])
     saveContent(content)
 
 

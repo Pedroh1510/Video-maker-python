@@ -1,30 +1,16 @@
 import os
-from robots.userInput import user
-from robots.text import robotText
-# # from robots.voice import robotVoice
-from robots.images import robotImages
-from robots.userInputEnv import userEnv
-from robots.video import robotVideo
-from robots.youtube import robotYoutube
-from robots.state import loadContent
-import json
+from app import start
 
-
-def start():
-    try:
-        userEnv()
-    except:
-        user()
-    robotText()
-    robotImages()
-    robotVideo()
-    robotYoutube()
-    # robotVoice()
+def main():
+    while True:
+        try:
+            start()   
+        except Exception as e:
+            print(e)
+        print('> Waiting 5 minutes')
+        os.system('sleep 300')
 
 
 if __name__ == "__main__":
-    print('> Start!')
-    start()
-    # print(json.dumps(loadContent()['sentences'], indent=2))
-    # print(json.dumps(loadContent()['sentences']))
-    print('> Terminated')
+    print('> Start loop!')
+    main()
