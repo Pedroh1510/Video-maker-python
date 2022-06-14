@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./db.sqlite"
+}
+
+model Input {
+  id           Int      @id @default(autoincrement())
+  lenguage     String
+  searchTerm   String   @unique
+  prefix       String
+  maxSentences Int
+  template     String
+  createdAt    DateTime @default(now())
+  Text         Text[]
+}
+
+model Text {
+  id      Int    @id @default(autoincrement())
+  inputId Int    @unique
+  input   Input  @relation(fields: [inputId], references: [id])
+  origin  String
+  content String
+
+  createdAt DateTime   @default(now())
+  Sentences Sentence[]
+}
+
+model Sentence {
+  id        Int      @id @default(autoincrement())
+  textId    Int
+  text      Text     @relation(fields: [textId], references: [id])
+  sentence  String
+  keywords  String
+  createdAt DateTime @default(now())
+  image     Image[]
+}
+
+model Image {
+  id         Int      @id @default(autoincrement())
+  sentenceId Int
+  sentence   Sentence @relation(fields: [sentenceId], references: [id])
+  url        String
+  downloaded Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}

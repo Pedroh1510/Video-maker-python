@@ -140,3 +140,4 @@ out.wmv
 output.ppm
 /.vscode
 *.png
+node_modules/
