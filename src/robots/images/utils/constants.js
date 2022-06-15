@@ -1,4 +1,4 @@
 export const TOTAL_IMAGES = {
-	ATTEMPTS: 1,
-	AMOUNT: 10
-};
+  ATTEMPTS: 1,
+  AMOUNT: 10,
+}

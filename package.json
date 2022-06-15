@@ -1,35 +1,47 @@
 {
-	"name": "video-maker-python",
-	"version": "1.0.0",
-	"description": "Projeto para automatizar a criação de videos em python",
-	"main": "index.js",
-	"type": "module",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Pedroh1510/Video-maker-python.git"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/Pedroh1510/Video-maker-python/issues"
-	},
-	"homepage": "https://github.com/Pedroh1510/Video-maker-python#readme",
-	"devDependencies": {
-		"typescript": "^4.7.3"
-	},
-	"dependencies": {
-		"@google-cloud/cloudbuild": "^3.0.0",
-		"@prisma/client": "^3.15.1",
-		"axios": "^0.27.2",
-		"dotenv": "^16.0.1",
-		"googleapis": "^101.0.0",
-		"ibm-watson": "^7.0.0",
-		"jimp": "^0.16.1",
-		"prompt-sync": "^4.2.0",
-		"wikijs": "^6.3.3"
-	}
+  "name": "video-maker-python",
+  "version": "1.0.0",
+  "description": "Projeto para automatizar a criação de videos em python",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "lint": "eslint src/**/*.js --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pedroh1510/Video-maker-python.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pedroh1510/Video-maker-python/issues"
+  },
+  "homepage": "https://github.com/Pedroh1510/Video-maker-python#readme",
+  "devDependencies": {
+    "eslint": "^8.17.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-standard": "^5.0.0",
+    "prettier": "^2.7.0",
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "@google-cloud/cloudbuild": "^3.0.0",
+    "@prisma/client": "^3.15.1",
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.1",
+    "googleapis": "^101.0.0",
+    "ibm-watson": "^7.0.0",
+    "jimp": "^0.16.1",
+    "prompt-sync": "^4.2.0",
+    "wikijs": "^6.3.3"
+  }
 }
