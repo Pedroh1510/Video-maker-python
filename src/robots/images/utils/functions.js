@@ -7,17 +7,9 @@ export async function compareImages(image1File, image2File) {
 	const distance = Jimp.distance(image1, image2);
 	// Pixel difference
 	const diff = Jimp.diff(image1, image2);
-
-	console.log(
-		`compareImages: distance: ${distance.toFixed(
-			3
-		)}, diff.percent: ${diff.percent.toFixed(3)}`
-	);
 	if (distance < 0.15 || diff.percent < 0.15) {
-		console.log('compareImages: Images match!');
 		return true;
 	}
-	console.log('compareImages: Images do NOT match!');
 	return false;
 }
 

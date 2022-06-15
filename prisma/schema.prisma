@@ -50,3 +50,8 @@ model Image {
   downloaded Boolean  @default(false)
   createdAt  DateTime @default(now())
 }
+
+model Blacklist {
+  id  Int    @id @default(autoincrement())
+  url String @unique
+}

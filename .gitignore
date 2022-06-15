@@ -141,3 +141,4 @@ output.ppm
 /.vscode
 *.png
 node_modules/
+*.sqlite

@@ -17,7 +17,6 @@ export default class ImageRepository {
 	}
 
 	async getImagesBySentenceId(sentenceId) {
-		console.log(sentenceId);
 		return this.#prisma.image.findMany({
 			where: {
 				sentenceId: sentenceId

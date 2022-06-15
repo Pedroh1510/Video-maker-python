@@ -7,10 +7,12 @@ import fsSync from 'node:fs';
 import { compareImages, getBufferFromUrl } from './utils/functions.js';
 import path from 'node:path';
 import Jimp from 'jimp';
+import BlacklistRepository from '../../repository/blacklist.js';
 
 export default class Images {
 	#textRepository = new TextRepository();
 	#imageRepository = new ImageRepository();
+	#blacklistRepository = new BlacklistRepository();
 	constructor(imageRepository = new ImageRepository()) {
 		this.#imageRepository = imageRepository;
 	}
@@ -29,7 +31,6 @@ export default class Images {
 			const query = `${sentence} ${listKeywords[attempts]}`;
 			try {
 				const images = await this.#getimagesLinkByQuery(query);
-				console.log({ images });
 				images.forEach((image) => {
 					if (!linkImages.has(image)) {
 						linkImages.add(image);
@@ -76,7 +77,7 @@ export default class Images {
 			const { id, url } = item;
 			try {
 				const file = await this.#downloadImage(url);
-				imagesDownloaded.push({ file, id });
+				imagesDownloaded.push({ file, id, url });
 			} catch (error) {}
 		}
 		return imagesDownloaded;
@@ -111,6 +112,21 @@ export default class Images {
 		return false;
 	}
 
+	async #checkImageInBlacklist(image = new File(), urlImage = '') {
+		const blacklist = await this.#blacklistRepository.getAll();
+		for await (const item of blacklist) {
+			const { url } = item;
+			if (url === urlImage) {
+				return true;
+			}
+			const imageBlacklist = await this.#downloadImage(url);
+			if (await this.#checkImage(image, imageBlacklist)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	async #saveImageOnDir(image = Buffer.from(), sentenceId = '', dir = '') {
 		return fs.writeFile(`${dir}/${sentenceId}.jpg`, image);
 	}
@@ -121,17 +137,28 @@ export default class Images {
 		);
 		const imagesDownloaded = await this.#downloadAllImages(images);
 		for await (const image of imagesDownloaded) {
-			const { file, id } = image;
+			const { file, id, url } = image;
 			if (!(await this.#checkImages(file, dir))) {
 				await this.#saveImageOnDir(file, sentenceId, dir);
+				return id;
+			} else if (await this.#checkImageInBlacklist(file, url)) {
 				return id;
 			}
 		}
 		return false;
 	}
 
-	#cleanDir(dir) {
-		return fs.rm(dir + '/*', { force: true, recursive: true });
+	async #cleanDir(dir) {
+		// get all the files in the current directory
+		const files = await fs.readdir(dir);
+		// loop over the files
+		for await (const file of files) {
+			// create the file path
+			const filePath = `${dir}/${file}`;
+			// deleta o arquivo/pasta do diretorio
+			await fs.unlink(filePath);
+		}
+		// return fs.rm(dir + '/*', { force: true, recursive: true });
 	}
 
 	async #downloadImagesBySentences(sentences = []) {
