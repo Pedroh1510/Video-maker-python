@@ -144,3 +144,4 @@ output.ppm
 *.jpeg
 node_modules/
 *.sqlite
+src/infra/credential/*.json

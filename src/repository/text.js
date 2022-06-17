@@ -31,6 +31,19 @@ export default class TextRepository {
     }
   }
 
+  async getById(id) {
+    const response = await this.#prisma.text.findFirst({
+      where: {
+        id,
+      },
+      include: {
+        Sentences: true,
+      },
+    })
+    if (!response) throw new Error('Texto não encontrado')
+    return response
+  }
+
   async getSentencesByIdText(id) {
     return this.#prisma.sentence.findMany({
       where: {

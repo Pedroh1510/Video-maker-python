@@ -22,4 +22,38 @@ export default class InputRepository {
       },
     })
   }
+
+  async getInfoToVideoById(id) {
+    const response = await this.#prisma.input.findFirst({
+      where: {
+        id,
+      },
+      select: {
+        prefix: true,
+        searchTerm: true,
+        Text: {
+          select: {
+            origin: true,
+            Sentences: {
+              select: {
+                sentence: true,
+                keywords: true,
+                image: {
+                  select: {
+                    url: true,
+                  },
+                  where: {
+                    downloaded: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!response) throw new Error('Input não encontrado')
+    return response
+  }
 }
