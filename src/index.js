@@ -11,7 +11,7 @@ async function main() {
   // await new Image().run({ textId: 1 })
   // await new ImageFormatter().run()
   // await new CreateSentenceImage().run(1)
-  await new Video().run()
+  await new Video().run({ inputId: 1 })
 }
 
 main()

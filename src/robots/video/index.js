@@ -1,6 +1,7 @@
 import Jimp from 'jimp'
 import path from 'node:path'
-import { DEFAULT_IMAGE_FORMAT, DIR } from '../utils/constants.js'
+import fs from 'node:fs/promises'
+import { DEFAULT_IMAGE_FORMAT, DIR, VIDEO_NAME } from '../utils/constants.js'
 import {
   cleanDir,
   getImages,
@@ -8,8 +9,11 @@ import {
   validateIfDirExistsOrCreate,
 } from '../utils/functions.js'
 import videoshow from 'videoshow'
+import { VIDEO_OPTIONS } from './utils/constants.js'
+import InputRepository from '../../repository/input.js'
 
 export default class Video {
+  #inputRepository = new InputRepository()
   async #compositeVideoImage(
     imageBackground = Jimp.prototype,
     imageForeground = Jimp.prototype
@@ -30,6 +34,8 @@ export default class Video {
   async #compositeVideoImages(dirImage = '', dirSentence = '') {
     const images = await getImages(dirImage)
     const imagesSentence = await getImages(dirSentence)
+    if (!images.length) throw new Error('No images found')
+    if (!imagesSentence.length) throw new Error('No images sentence found')
     const imagesComposite = []
     let previusImage = null
     for await (const imageSentence of imagesSentence) {
@@ -70,22 +76,36 @@ export default class Video {
     }
   }
 
-  async #compositeVideo(dirImages = '', nameVideo = '', dir = '') {
+  async #getAudioPath(inputId = 1) {
+    const { template } = await this.#inputRepository.getById(inputId)
+    if (!template) throw new Error('No template found')
+    const templatePath = path.join(DIR.AUDIO, template)
+    const dir = await fs.stat(templatePath)
+    if (!dir.isDirectory()) throw new Error('No template found')
+    const files = await fs.readdir(templatePath)
+    for await (const file of files) {
+      if (file.includes('.mp3')) return path.join(templatePath, file)
+    }
+    throw new Error('No audio found')
+  }
+
+  async #compositeVideo(dirImages = '', dir = '', audio = '') {
     const imagesPath = await getImagesPath(dirImages)
     return new Promise((resolve, reject) => {
       videoshow(imagesPath, {
-        fps: 30,
-        loop: 8,
+        fps: VIDEO_OPTIONS.fps,
+        loop: VIDEO_OPTIONS.imageDwellTime,
         transition: true,
-        transitionDuration: 1,
-        videoBitrate: 1024,
+        transitionDuration: VIDEO_OPTIONS.transitionDuration,
+        videoBitrate: VIDEO_OPTIONS.videoBitrate,
         videoCodec: 'libx264',
-        // size: '1280x720',
-        format: 'mp4',
-        // pixelFormat: 'argb',
+        format: VIDEO_OPTIONS.format,
         pixelFormat: 'yuva420p',
+        audioBitrate: VIDEO_OPTIONS.audioBitrate,
+        audioChannels: VIDEO_OPTIONS.audioChannels,
       })
-        .save(path.join(dir, `${nameVideo}.mp4`))
+        .audio(audio)
+        .save(path.join(dir, VIDEO_NAME))
         .on('start', function (command) {
           console.log('ffmpeg process started:', command)
         })
@@ -94,7 +114,7 @@ export default class Video {
     })
   }
 
-  async run() {
+  async run({ inputId }) {
     await validateIfDirExistsOrCreate(DIR.COMPOSITES)
     await validateIfDirExistsOrCreate(DIR.VIDEO)
     await cleanDir(DIR.COMPOSITES)
@@ -104,6 +124,7 @@ export default class Video {
       DIR.SENTENCES
     )
     await this.#saveImages(imagesComposite, DIR.COMPOSITES)
-    await this.#compositeVideo(DIR.COMPOSITES, 'video', DIR.VIDEO)
+    const audioPath = await this.#getAudioPath(inputId)
+    await this.#compositeVideo(DIR.COMPOSITES, DIR.VIDEO, audioPath)
   }
 }
