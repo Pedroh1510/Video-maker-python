@@ -1,6 +1,7 @@
-import CONFIG from '../config/env.js'
-import Nltk from 'ibm-watson/natural-language-understanding/v1.js'
 import { IamAuthenticator } from 'ibm-watson/auth/index.js'
+import Nltk from 'ibm-watson/natural-language-understanding/v1.js'
+
+import CONFIG from '../config/env.js'
 
 export default class Watson {
   nlu = new Nltk({

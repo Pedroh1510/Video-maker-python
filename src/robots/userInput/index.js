@@ -1,6 +1,7 @@
-import { optionsLenguage, optionsTemplate } from './utils/constants.js'
 import promptSync from 'prompt-sync'
+
 import InputRepository from '../../repository/input.js'
+import { optionsLenguage, optionsTemplate } from './utils/constants.js'
 
 export default class UserInput {
   #input = promptSync({ sigint: true })

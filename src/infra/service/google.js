@@ -1,4 +1,5 @@
 import { google } from 'googleapis'
+
 import CONFIG from '../config/env.js'
 export default class Google {
   async fetchImage(query) {

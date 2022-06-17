@@ -1,9 +1,10 @@
+import jimp from 'jimp'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import jimp from 'jimp'
+
 import { DIR } from '../utils/constants.js'
-import { FORMAT_IMAGE } from './utils/constants.js'
 import { cleanDir, validateIfDirExistsOrCreate } from '../utils/functions.js'
+import { FORMAT_IMAGE } from './utils/constants.js'
 
 export default class ImageFormatter {
   async #getImagesPath(dir = '') {

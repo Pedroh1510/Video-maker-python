@@ -1,6 +1,5 @@
-import Jimp from 'jimp'
-
 import https from 'https'
+import Jimp from 'jimp'
 
 export async function compareImages(image1File, image2File) {
   const image1 = await Jimp.read(image1File)

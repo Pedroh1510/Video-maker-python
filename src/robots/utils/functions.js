@@ -1,6 +1,6 @@
-import path from 'node:path'
-import fs from 'node:fs/promises'
 import Jimp from 'jimp'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
 export async function validateIfDirExistsOrCreate(dir = '') {
   const dirExists = await fs.stat(dir).catch(() => false)

@@ -1,12 +1,13 @@
+import Jimp from 'jimp'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+
 import Google from '../../infra/service/google.js'
+import BlacklistRepository from '../../repository/blacklist.js'
 import ImageRepository from '../../repository/image.js'
 import TextRepository from '../../repository/text.js'
 import { TOTAL_IMAGES } from './utils/constants.js'
-import fs from 'node:fs/promises'
 import { compareImages } from './utils/functions.js'
-import path from 'node:path'
-import Jimp from 'jimp'
-import BlacklistRepository from '../../repository/blacklist.js'
 
 export default class Images {
   #textRepository = new TextRepository()

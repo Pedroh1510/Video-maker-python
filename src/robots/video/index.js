@@ -1,6 +1,9 @@
 import Jimp from 'jimp'
-import path from 'node:path'
 import fs from 'node:fs/promises'
+import path from 'node:path'
+import videoshow from 'videoshow'
+
+import InputRepository from '../../repository/input.js'
 import { DEFAULT_IMAGE_FORMAT, DIR, VIDEO_NAME } from '../utils/constants.js'
 import {
   cleanDir,
@@ -8,9 +11,7 @@ import {
   getImagesPath,
   validateIfDirExistsOrCreate,
 } from '../utils/functions.js'
-import videoshow from 'videoshow'
 import { VIDEO_OPTIONS } from './utils/constants.js'
-import InputRepository from '../../repository/input.js'
 
 export default class Video {
   #inputRepository = new InputRepository()

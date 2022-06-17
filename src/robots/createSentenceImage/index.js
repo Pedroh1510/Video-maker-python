@@ -1,10 +1,11 @@
-import TextRepository from '../../repository/text.js'
 import Jimp from 'jimp'
-import path from 'node:path'
 import fs from 'node:fs/promises'
+import path from 'node:path'
+
+import TextRepository from '../../repository/text.js'
 import { FORMAT_IMAGE } from '../ImageFormatter/utils/constants.js'
-import { cleanDir, validateIfDirExistsOrCreate } from '../utils/functions.js'
 import { DIR } from '../utils/constants.js'
+import { cleanDir, validateIfDirExistsOrCreate } from '../utils/functions.js'
 
 export default class CreateSentenceImage {
   #textRepository = new TextRepository()
@@ -56,10 +57,10 @@ export default class CreateSentenceImage {
     }
   }
 
-  async run(idText) {
+  async run({ textId }) {
     await validateIfDirExistsOrCreate(DIR.SENTENCES)
     await cleanDir(DIR.SENTENCES)
-    const sentences = await this.#textRepository.getSentencesByIdText(idText)
+    const sentences = await this.#textRepository.getSentencesByIdText(textId)
     const images = await this.#createImages(sentences, FORMAT_IMAGE)
     await this.#saveImages(images, DIR.SENTENCES)
   }
