@@ -44,6 +44,7 @@
     "ibm-watson": "^7.0.0",
     "jimp": "^0.16.1",
     "prompt-sync": "^4.2.0",
+    "videoshow": "^0.1.12",
     "wikijs": "^6.3.3"
   }
 }

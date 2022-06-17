@@ -140,5 +140,7 @@ out.wmv
 output.ppm
 /.vscode
 *.png
+*.jpg
+*.jpeg
 node_modules/
 *.sqlite
