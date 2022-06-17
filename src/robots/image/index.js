@@ -3,9 +3,12 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import Google from '../../infra/service/google.js'
+import logger from '../../infra/service/logger.js'
 import BlacklistRepository from '../../repository/blacklist.js'
 import ImageRepository from '../../repository/image.js'
 import TextRepository from '../../repository/text.js'
+import { DIR } from '../utils/constants.js'
+import { cleanDir, validateIfDirExistsOrCreate } from '../utils/functions.js'
 import { TOTAL_IMAGES } from './utils/constants.js'
 import { compareImages } from './utils/functions.js'
 
@@ -39,7 +42,7 @@ export default class Images {
           }
         })
       } catch (err) {
-        console.log(err)
+        logger.error(err)
         totalError++
         if (totalError > TOTAL_IMAGES.ATTEMPTS) {
           // throw new Error('Não foi possível obter imagens');
@@ -62,8 +65,6 @@ export default class Images {
         imagesPerSentence.push({ linkImages, sentenceId: id })
       }
     }
-    // if (sentences.length !== imagesPerSentence.length)
-    // 	throw new Error('Não foi possível obter todas as imagens');
     return imagesPerSentence
   }
 
@@ -147,25 +148,17 @@ export default class Images {
     return false
   }
 
-  async #cleanDir(dir) {
-    // get all the files in the current directory
-    const files = await fs.readdir(dir)
-    // loop over the files
-    for await (const file of files) {
-      // create the file path
-      const filePath = path.join(dir, file)
-      // deleta o arquivo/pasta do diretorio
-      await fs.unlink(filePath)
-    }
-  }
-
   async #downloadImagesBySentences(sentences = []) {
-    const dir = path.resolve('src', '..', 'images', 'downloads')
-    await this.#cleanDir(dir)
+    logger.info('Baixando imagens')
+    await validateIfDirExistsOrCreate(DIR.IMAGES_DOWNLOADED)
+    await cleanDir(DIR.IMAGES_DOWNLOADED)
     const imagesDownloaded = []
     for (const sentence of sentences) {
       const { id } = sentence
-      const imageId = await this.#downloadImagesBySentenceId(id, dir)
+      const imageId = await this.#downloadImagesBySentenceId(
+        id,
+        DIR.IMAGES_DOWNLOADED
+      )
       if (imageId) {
         imagesDownloaded.push({
           id: imageId,
@@ -178,13 +171,18 @@ export default class Images {
   }
 
   async run({ textId }) {
-    console.log('Iniciando processamento de imagens...')
+    logger.info('Iniciando processamento de imagens')
+    const start = new Date().getTime()
     const sentences = await this.#textRepository.getSentencesByIdText(textId)
-    // const images = await this.#getImagesAllSentences(sentences);
-    // await this.#imageRepository.save({ images });
-    const images = await this.#downloadImagesBySentences(sentences)
-    await this.#imageRepository.update({ images })
-
-    console.log('Processamento de imagens finalizado.')
+    const images = await this.#getImagesAllSentences(sentences)
+    await this.#imageRepository.save({ images })
+    const imagesDownloaded = await this.#downloadImagesBySentences(sentences)
+    await this.#imageRepository.update({ images: imagesDownloaded })
+    const end = new Date().getTime()
+    logger.info(
+      `Finalizado processamento de imagens. Tempo de execução: ${
+        (end - start) / 1000
+      }s`
+    )
   }
 }

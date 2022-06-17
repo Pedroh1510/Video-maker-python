@@ -1,4 +1,6 @@
 import wiki from 'wikijs'
+
+import logger from './logger.js'
 const instanceWiki = wiki.default
 
 export default class Wikipedia {
@@ -11,10 +13,12 @@ export default class Wikipedia {
   }
 
   async searchTerm({ searchTerm }) {
+    logger.debug('Buscando termo')
     return this.#instance.search(searchTerm, 1).then((data) => data.results)
   }
 
   async getContent({ searchTerm }) {
+    logger.debug('Buscando conteúdo')
     return this.#instance.page(searchTerm).then(async (page) => {
       const content = await page.content()
       return {

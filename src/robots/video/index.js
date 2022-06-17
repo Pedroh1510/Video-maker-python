@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import videoshow from 'videoshow'
 
+import logger from '../../infra/service/logger.js'
 import InputRepository from '../../repository/input.js'
 import { DEFAULT_IMAGE_FORMAT, DIR, VIDEO_NAME } from '../utils/constants.js'
 import {
@@ -33,6 +34,7 @@ export default class Video {
   }
 
   async #compositeVideoImages(dirImage = '', dirSentence = '') {
+    logger.info('Criando imagens para o video')
     const images = await getImages(dirImage)
     const imagesSentence = await getImages(dirSentence)
     if (!images.length) throw new Error('No images found')
@@ -71,6 +73,7 @@ export default class Video {
   }
 
   async #saveImages(images = [{ image: Jimp.prototype, name: '' }], dir = '') {
+    logger.info('Salvando imagens')
     for (const image of images) {
       const imagePath = path.join(dir, `${image.name}${DEFAULT_IMAGE_FORMAT}`)
       await image.image.writeAsync(imagePath)
@@ -78,6 +81,7 @@ export default class Video {
   }
 
   async #getAudioPath(inputId = 1) {
+    logger.info('Buscando audio')
     const { template } = await this.#inputRepository.getById(inputId)
     if (!template) throw new Error('No template found')
     const templatePath = path.join(DIR.AUDIO, template)
@@ -91,6 +95,7 @@ export default class Video {
   }
 
   async #compositeVideo(dirImages = '', dir = '', audio = '') {
+    logger.info('Criando video')
     const imagesPath = await getImagesPath(dirImages)
     return new Promise((resolve, reject) => {
       videoshow(imagesPath, {
@@ -107,15 +112,14 @@ export default class Video {
       })
         .audio(audio)
         .save(path.join(dir, VIDEO_NAME))
-        .on('start', function (command) {
-          console.log('ffmpeg process started:', command)
-        })
         .on('error', (err) => reject(err))
         .on('end', () => resolve())
     })
   }
 
   async run({ inputId }) {
+    logger.info('Iniciando criação do video')
+    const start = new Date().getTime()
     await validateIfDirExistsOrCreate(DIR.COMPOSITES)
     await validateIfDirExistsOrCreate(DIR.VIDEO)
     await cleanDir(DIR.COMPOSITES)
@@ -127,5 +131,9 @@ export default class Video {
     await this.#saveImages(imagesComposite, DIR.COMPOSITES)
     const audioPath = await this.#getAudioPath(inputId)
     await this.#compositeVideo(DIR.COMPOSITES, DIR.VIDEO, audioPath)
+    const end = new Date().getTime()
+    logger.info(
+      `Criação do video finalizada em ${(end - start) / 1000} segundos`
+    )
   }
 }

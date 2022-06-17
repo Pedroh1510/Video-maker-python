@@ -1,3 +1,4 @@
+import logger from '../../infra/service/logger.js'
 import Watson from '../../infra/service/watson.js'
 import Wikipedia from '../../infra/service/wikipedia.js'
 import InputRepository from '../../repository/input.js'
@@ -17,11 +18,11 @@ export default class TextWikipedia {
   }
 
   async #fetchContent({ lenguage, searchTerm }) {
-    console.log('Iniciando busca de conteúdo')
+    logger.info('Iniciando busca de conteúdo')
     try {
       const wikipedia = new Wikipedia(lenguage)
       const listSearchTerms = await wikipedia.searchTerm({ searchTerm })
-      if (!Array.isArray(listSearchTerms) || listSearchTerms.length > 0)
+      if (!Array.isArray(listSearchTerms) || !listSearchTerms?.length)
         throw new Error('Search term is not valid')
       const { url, content, summary } = await wikipedia.getContent({
         searchTerm: listSearchTerms[0],
@@ -33,13 +34,13 @@ export default class TextWikipedia {
   }
 
   #sanitizeContent(content) {
-    console.log('Iniciando sanitização do texto')
+    logger.info('Sanitizando conteúdo')
     const textWithoutBlankLines = removeBlankLines(content)
     return normalizeText(textWithoutBlankLines)
   }
 
   async #splitContentInSentences(content) {
-    console.log('Iniciando quebra do texto em sentenças')
+    logger.info('Iniciando separação de sentenças')
     const { sentences } = await new Watson().nluAnalize(content, this.#lenguage)
     return sentences.map((sentence) => {
       if (sentence.text === undefined) throw new Error('Sentence is undefined')
@@ -57,7 +58,7 @@ export default class TextWikipedia {
   }
 
   async #getKeywordsForAllSentences(sentences = ['']) {
-    console.log('Iniciando processamento de keywords')
+    logger.debug('Iniciando processamento de keywords para todas as sentenças')
     const fatormatedSentences = []
     for await (const sentence of sentences) {
       const keywords = await this.#getKeywords(sentence)
@@ -67,12 +68,15 @@ export default class TextWikipedia {
   }
 
   #getLimitedSentences(sentences = [''], limit = 3) {
-    console.log('Limitando sentenças')
+    logger.info('Iniciando processamento de sentenças')
+    if (sentences.length < limit)
+      throw new Error('Numero de sentenças é menor que o limite')
     return sentences.slice(0, limit)
   }
 
   async run({ inputId }) {
-    console.log('Iniciando processamento de texto')
+    logger.info('Iniciando processamento de texto')
+    const start = new Date().getTime()
     const { lenguage, searchTerm, maxSentences } =
       await this.#inputRepository.getById(inputId)
     this.#lenguage = lenguage
@@ -95,7 +99,10 @@ export default class TextWikipedia {
       sentencesTmp
     )
     await this.#textRepository.saveSentences(sentencesObj)
-    console.log(`Processamento de texto finalizado, id: ${id}`)
+    const end = new Date().getTime()
+    logger.info(
+      `Processamento de texto finalizado em ${(end - start) / 1000}s, id: ${id}`
+    )
     return id
   }
 }

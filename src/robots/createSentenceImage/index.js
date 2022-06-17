@@ -1,9 +1,9 @@
 import Jimp from 'jimp'
-import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import logger from '../../infra/service/logger.js'
 import TextRepository from '../../repository/text.js'
-import { FORMAT_IMAGE } from '../ImageFormatter/utils/constants.js'
+import { FORMAT_IMAGE } from '../imageFormatter/utils/constants.js'
 import { DIR } from '../utils/constants.js'
 import { cleanDir, validateIfDirExistsOrCreate } from '../utils/functions.js'
 
@@ -35,6 +35,7 @@ export default class CreateSentenceImage {
     texts = [{ id: 1, sentence: '' }],
     { width, height, quality }
   ) {
+    logger.info(`Criando imagens das frases`)
     const images = []
     for (const text of texts) {
       const image = await this.#createImage(text.sentence, {
@@ -48,20 +49,27 @@ export default class CreateSentenceImage {
   }
 
   async #saveImages(images = [{ image: Jimp.prototype, name: '' }], dir = '') {
+    logger.info(`Salvando imagens`)
     for (const image of images) {
       const imageName = `${image.name}.jpeg`
       const imagePath = path.join(dir, imageName)
-      const a = await image.image.getBufferAsync(Jimp.MIME_JPEG)
-      await fs.writeFile(imagePath, a)
-      // await image.image.write(imagePath)
+      await image.image.write(imagePath)
     }
   }
 
   async run({ textId }) {
+    logger.info(`Iniciando a criação das imagens das frases`)
+    const start = new Date().getTime()
     await validateIfDirExistsOrCreate(DIR.SENTENCES)
     await cleanDir(DIR.SENTENCES)
     const sentences = await this.#textRepository.getSentencesByIdText(textId)
     const images = await this.#createImages(sentences, FORMAT_IMAGE)
     await this.#saveImages(images, DIR.SENTENCES)
+    const end = new Date().getTime()
+    logger.info(
+      `Criação das imagens das frases finalizada, tempo de execução: ${
+        (end - start) / 1000
+      }s`
+    )
   }
 }

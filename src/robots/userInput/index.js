@@ -1,5 +1,6 @@
 import promptSync from 'prompt-sync'
 
+import logger from '../../infra/service/logger.js'
 import InputRepository from '../../repository/input.js'
 import { optionsLenguage, optionsTemplate } from './utils/constants.js'
 
@@ -11,14 +12,16 @@ export default class UserInput {
   }
 
   #askAndReturnLenguage() {
-    console.log('Available languages:')
+    logger.info('Linguas disponíveis:')
+    const listLenguages = []
     for (const [key, value] of Object.entries(optionsLenguage)) {
-      console.log(`${key} - ${value}`)
+      listLenguages.push(`${key} - ${value}`)
     }
+    logger.info(listLenguages.join('\n'))
 
     const lenguage = this.#input('Select a lenguage: ')
     if (!this.#validateValue(lenguage, optionsLenguage)) {
-      console.log('Invalid lenguage')
+      logger.error('Invalid lenguage')
       throw new Error(`The lenguage ${lenguage} is not available`)
     }
     return lenguage
@@ -34,7 +37,7 @@ export default class UserInput {
   #askAndReturnSearchTerm() {
     const searchTerm = this.#input('Enter a search term: ')
     if (!searchTerm) {
-      console.log('Invalid search term')
+      logger.error('Invalid search term')
       throw new Error('The search term is empty')
     }
     return searchTerm
@@ -43,7 +46,7 @@ export default class UserInput {
   #askPrefix() {
     const prefix = this.#input('Enter a prefix: ')
     if (!prefix) {
-      console.log('Invalid prefix')
+      logger.error('Invalid prefix')
       throw new Error('The prefix is empty')
     }
     return prefix
@@ -54,13 +57,15 @@ export default class UserInput {
   }
 
   #askTemplate() {
-    console.log('Available templates:')
+    logger.info('Templates disponíveis:')
+    const listTemplates = []
     for (const [key, value] of Object.entries(optionsTemplate)) {
-      console.log(`${key} - ${value}`)
+      listTemplates.push(`${key} - ${value}`)
     }
+    logger.info(listTemplates.join('\n'))
     const template = this.#input('Select a template: ')
     if (!this.#validateValue(template, optionsTemplate)) {
-      console.log('Invalid template')
+      logger.error('Invalid template')
       throw new Error(`The template ${template} is not available`)
     }
     return template
@@ -77,6 +82,7 @@ export default class UserInput {
   }
 
   async run() {
+    logger.info('Iniciando cadastro de input')
     const input = {}
     input.lenguage = this.#onlyInputValid(this.#askAndReturnLenguage.bind(this))
     input.searchTerm = this.#onlyInputValid(
@@ -86,14 +92,8 @@ export default class UserInput {
     input.template = this.#onlyInputValid(this.#askTemplate.bind(this))
     input.maxSentences = this.#getMaxSentence()
 
-    console.log(input)
-    try {
-      const { id } = await this.#inputRepository.save(input)
-      return id
-    } catch (e) {
-      console.log('Error saving input')
-      console.log(e)
-      throw e
-    }
+    const { id } = await this.#inputRepository.save(input)
+    logger.info(`Input cadastrado com sucesso: ${id}`)
+    return id
   }
 }

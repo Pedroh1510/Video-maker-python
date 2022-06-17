@@ -2,6 +2,7 @@ import { IamAuthenticator } from 'ibm-watson/auth/index.js'
 import Nltk from 'ibm-watson/natural-language-understanding/v1.js'
 
 import CONFIG from '../config/env.js'
+import logger from './logger.js'
 
 export default class Watson {
   nlu = new Nltk({
@@ -13,6 +14,7 @@ export default class Watson {
   })
 
   async nluAnalize(text, lenguage = 'en') {
+    logger.debug('Analisando texto')
     const response = await this.nlu.analyze({
       text,
       language: lenguage,

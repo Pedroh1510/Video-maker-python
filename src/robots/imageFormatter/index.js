@@ -2,6 +2,7 @@ import jimp from 'jimp'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import logger from '../../infra/service/logger.js'
 import { DIR } from '../utils/constants.js'
 import { cleanDir, validateIfDirExistsOrCreate } from '../utils/functions.js'
 import { FORMAT_IMAGE } from './utils/constants.js'
@@ -24,6 +25,7 @@ export default class ImageFormatter {
   }
 
   async #getImages(dir = '') {
+    logger.info(`Obtendo imagens do diretorio ${dir}`)
     const imagesPath = await this.#getImagesPath(dir)
     const images = new Set()
     for (const imagePath of imagesPath) {
@@ -34,11 +36,6 @@ export default class ImageFormatter {
   }
 
   async #ajustImage(image, { width, height, quality }) {
-    // if (image.getWidth() > image.getHeight()) {
-    //   image.resize(width, jimp.AUTO)
-    // } else {
-    //   image.resize(jimp.AUTO, height)
-    // }
     image.resize(width, height)
     if (quality) {
       image.quality(quality)
@@ -50,6 +47,7 @@ export default class ImageFormatter {
     images = [{ image: jimp.prototype }],
     { width, height, quality }
   ) {
+    logger.info(`Ajustando imagens`)
     for await (const image of images) {
       await this.#ajustImage(image.image, { width, height, quality })
     }
@@ -57,6 +55,7 @@ export default class ImageFormatter {
   }
 
   async #saveImages(images = [{ image: jimp.prototype, path: '' }], dir = '') {
+    logger.info(`Salvando imagens`)
     for (const image of images) {
       const imageName = path.basename(image.path)
       const imagePath = path.join(dir, imageName)
@@ -65,10 +64,18 @@ export default class ImageFormatter {
   }
 
   async run() {
+    logger.info('Iniciando formatação de imagens')
+    const start = new Date().getTime()
     await validateIfDirExistsOrCreate(DIR.IMAGES_FORMATED)
     await cleanDir(DIR.IMAGES_FORMATED)
     const images = await this.#getImages(DIR.IMAGES_DOWNLOADED)
     const ajustedImages = await this.#ajustAllImages(images, FORMAT_IMAGE)
     await this.#saveImages(ajustedImages, DIR.IMAGES_FORMATED)
+    const end = new Date().getTime()
+    logger.info(
+      `Formatação de imagens finalizada, tempo de execução: ${
+        (end - start) / 1000
+      }s`
+    )
   }
 }

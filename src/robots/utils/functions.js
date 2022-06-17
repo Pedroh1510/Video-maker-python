@@ -2,7 +2,10 @@ import Jimp from 'jimp'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import logger from '../../infra/service/logger.js'
+
 export async function validateIfDirExistsOrCreate(dir = '') {
+  logger.info(`Validando se o diretorio ${dir} existe`)
   const dirExists = await fs.stat(dir).catch(() => false)
   if (!dirExists) {
     await fs.mkdir(dir, { recursive: true })
@@ -23,6 +26,7 @@ export async function cleanDir(dir = '') {
 }
 
 export async function getImagesPath(dir = '') {
+  logger.info(`Obtendo paths das imagens do diretorio ${dir}`)
   const files = await fs.readdir(dir)
   const images = new Set()
   for (const file of files) {
@@ -39,6 +43,7 @@ export async function getImagesPath(dir = '') {
 }
 
 export async function getImages(dir = '') {
+  logger.info(`Obtendo imagens do diretorio ${dir}`)
   const imagesPath = await getImagesPath(dir)
   const images = new Set()
   for (const imagePath of imagesPath) {
