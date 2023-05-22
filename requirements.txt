@@ -1,7 +1,7 @@
 moviepy==1.0.3
 google_auth_oauthlib==0.3.0
 opencv_python==4.5.3.56
-requests==2.21.0
+requests==2.31.0
 hurry.filesize==0.9
 watson_developer_cloud==2.8.0
 pymediawiki==0.7.0
